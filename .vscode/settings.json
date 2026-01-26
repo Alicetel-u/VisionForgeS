@@ -1,0 +1,13 @@
+{
+    "editor.codeLens": false,
+    "git.decorations.enabled": false,
+    "git.enabled": false,
+    "gitlens.codeLens.enabled": false,
+    "gitlens.currentLineBlame.enabled": false,
+    "gitlens.hovers.enabled": false,
+    "gitlens.statusBar.enabled": false,
+    "gitlens.mode.active": "zen",
+    "scm.diffDecorations": "none",
+    "editor.lightbulb.enabled": "off",
+    "workbench.editor.enablePreview": false
+}

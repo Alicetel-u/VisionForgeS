@@ -7,7 +7,7 @@ export const RemotionVideo: React.FC = () => {
             <Composition
                 id="HelloWorld"
                 component={HelloWorld}
-                durationInFrames={150}
+                durationInFrames={630} // 210フレーム * 3記事 = 630フレーム
                 fps={30}
                 width={1920}
                 height={1080}

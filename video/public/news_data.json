@@ -1,0 +1,23 @@
+[
+  {
+    "id": 0,
+    "title": "衆院選きょう公示 12日間の選挙戦",
+    "summary": "",
+    "audio": "audio/news_voice_0.mp3",
+    "image": "images/news_image_0.jpg"
+  },
+  {
+    "id": 1,
+    "title": "介入直前手段 レートチェックとは",
+    "summary": "",
+    "audio": "audio/news_voice_1.mp3",
+    "image": null
+  },
+  {
+    "id": 2,
+    "title": "被告の手錠・腰縄 運用見直す通知",
+    "summary": "",
+    "audio": "audio/news_voice_2.mp3",
+    "image": null
+  }
+]

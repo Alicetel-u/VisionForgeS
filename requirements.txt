@@ -1,3 +1,5 @@
 moviepy==1.0.3
 Pillow
 python-dotenv
+feedparser
+gTTS

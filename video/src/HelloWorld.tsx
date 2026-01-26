@@ -1,139 +1,192 @@
 import React from 'react';
 import {
     AbsoluteFill,
+    Audio,
     interpolate,
+    Sequence,
     spring,
     useCurrentFrame,
     useVideoConfig,
+    staticFile,
+    Img,
 } from 'remotion';
 
+// 生成されたニュースデータを読み込む
+import newsDataRaw from '../public/news_data.json';
+
+interface NewsItem {
+    id: number;
+    title: string;
+    summary: string;
+    audio: string;
+    image: string | null;
+}
+
+const newsData = newsDataRaw as NewsItem[];
+
 export const HelloWorld: React.FC = () => {
-    const frame = useCurrentFrame();
-    const { fps, width, height } = useVideoConfig();
+    // 1ニュースあたりの表示時間
+    const durationPerItem = 210;
 
-    // 背景のグラデーションアニメーション
-    const rotation = interpolate(frame, [0, 150], [0, 360]);
-    const gradientScale = interpolate(
-        Math.sin(frame / 20),
-        [-1, 1],
-        [1, 1.2]
+    return (
+        <AbsoluteFill style={{ backgroundColor: '#000' }}>
+            {newsData.map((news, index) => {
+                return (
+                    <Sequence
+                        key={news.id}
+                        from={index * durationPerItem}
+                        durationInFrames={durationPerItem}
+                    >
+                        <NewsScene news={news} />
+                    </Sequence>
+                );
+            })}
+        </AbsoluteFill>
     );
+};
 
-    // タイトルのスプリングアニメーション
+const NewsScene: React.FC<{ news: NewsItem }> = ({ news }) => {
+    const frame = useCurrentFrame();
+    const { fps } = useVideoConfig();
+
+    // 1ニュースあたりの表示時間
+    const durationPerItem = 210;
+
+    // エントランスアニメーション
     const entrance = spring({
         frame,
         fps,
-        config: {
-            damping: 10,
-        },
+        config: { damping: 12 },
     });
 
-    const scale = interpolate(entrance, [0, 1], [0.8, 1]);
     const opacity = interpolate(entrance, [0, 1], [0, 1]);
 
-    // パーティクルの配置データ（シミュレーション）
-    const particles = Array.from({ length: 15 }).map((_, i) => {
-        const seed = i * 123.45;
-        const x = (Math.sin(seed) * 0.5 + 0.5) * width;
-        const y = (Math.cos(seed) * 0.5 + 0.5) * height;
-        const offset = Math.sin((frame + i * 10) / 30) * 50;
-        return { x, y: y + offset, size: 10 + (i % 5) * 10 };
-    });
+    // 画像のズームアニメーション (Ken Burns Effect)
+    const imageScale = interpolate(frame, [0, 210], [1, 1.2]);
 
     return (
-        <AbsoluteFill
-            style={{
-                backgroundColor: '#0a0a0a',
-                overflow: 'hidden',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-            }}
-        >
-            {/* 背景グラデーション */}
-            <AbsoluteFill
-                style={{
-                    background: `conic-gradient(from ${rotation}deg at 50% 50%, #ff8c00, #ff0080, #7928ca, #ff8c00)`,
-                    filter: 'blur(100px)',
-                    opacity: 0.4,
-                    transform: `scale(${gradientScale})`,
-                }}
-            />
+        <AbsoluteFill style={{ flexDirection: 'row', display: 'flex' }}>
+            {/* 音声の再生 */}
+            <Audio src={staticFile(news.audio)} />
 
-            {/* パーティクル層 */}
-            {particles.map((p, i) => (
-                <div
-                    key={i}
-                    style={{
-                        position: 'absolute',
-                        left: p.x,
-                        top: p.y,
-                        width: p.size,
-                        height: p.size,
-                        borderRadius: '50%',
-                        backgroundColor: 'white',
-                        opacity: 0.15,
-                        filter: 'blur(5px)',
-                    }}
-                />
-            ))}
+            {/* 左側：画像セクション */}
+            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', backgroundColor: '#1a1a1a' }}>
+                {news.image ? (
+                    <Img
+                        src={staticFile(news.image)}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transform: `scale(${imageScale})`,
+                            opacity: opacity,
+                        }}
+                    />
+                ) : (
+                    <div
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            background: 'linear-gradient(135deg, #1a3a5a 0%, #050a10 100%)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: 100 }}>NO IMAGE</span>
+                    </div>
+                )}
+                <AbsoluteFill style={{ background: 'linear-gradient(90deg, transparent 70%, rgba(0,0,0,1) 100%)' }} />
+            </div>
 
-            {/* メインコンテンツ */}
-            <AbsoluteFill
-                style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    scale: String(scale),
-                    opacity: String(opacity),
-                }}
-            >
-                <h1
-                    style={{
-                        color: 'white',
-                        fontSize: 160,
-                        fontWeight: 900,
-                        margin: 0,
-                        letterSpacing: '-0.05em',
-                        textShadow: '0 0 40px rgba(255, 255, 255, 0.3)',
-                    }}
-                >
-                    Vision<span style={{ color: '#ff8c00' }}>Forge</span>
-                </h1>
-                <p
-                    style={{
-                        color: 'rgba(255, 255, 255, 0.6)',
-                        fontSize: 40,
-                        marginTop: 20,
-                        fontWeight: 300,
-                        letterSpacing: '0.4em',
-                        textTransform: 'uppercase',
-                    }}
-                >
-                    Automated Video Production
-                </p>
-            </AbsoluteFill>
-
-            {/* プログレスバー */}
+            {/* 右側：テキストセクション */}
             <div
                 style={{
-                    position: 'absolute',
-                    bottom: 60,
-                    left: '10%',
-                    width: '80%',
-                    height: 6,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: 3,
-                    overflow: 'hidden',
+                    width: '45%',
+                    backgroundColor: '#000',
+                    padding: '60px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    borderLeft: '4px solid #ff3e3e',
+                    zIndex: 10,
                 }}
             >
                 <div
                     style={{
-                        width: `${(frame / 150) * 100}%`,
-                        height: '100%',
-                        background: 'linear-gradient(90deg, #ff8c00, #ff0080)',
-                        boxShadow: '0 0 10px #ff0080',
+                        backgroundColor: '#ff3e3e',
+                        color: 'white',
+                        padding: '5px 20px',
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        marginBottom: 30,
+                        width: 'fit-content',
+                        transform: `translateX(${interpolate(entrance, [0, 1], [-50, 0])}px)`,
+                        opacity: opacity
                     }}
-                />
+                >
+                    BREAKING NEWS
+                </div>
+
+                <div style={{ opacity: opacity, transform: `translateY(${interpolate(entrance, [0, 1], [30, 0])}px)` }}>
+                    <h2
+                        style={{
+                            color: '#fff',
+                            fontSize: 64,
+                            fontWeight: 900,
+                            marginBottom: 40,
+                            lineHeight: 1.2,
+                        }}
+                    >
+                        {news.title}
+                    </h2>
+
+                    <div
+                        style={{
+                            color: '#bbb',
+                            fontSize: 32,
+                            lineHeight: 1.6,
+                            height: '240px',
+                            overflow: 'hidden',
+                            fontFamily: 'monospace',
+                        }}
+                    >
+                        {/* タイピングアニメーションの実装 */}
+                        {(() => {
+                            const typingStart = 30;
+                            const charsShown = Math.floor(interpolate(frame, [typingStart, durationPerItem - 30], [0, news.summary.length], {
+                                extrapolateLeft: 'clamp',
+                                extrapolateRight: 'clamp',
+                            }));
+                            return news.summary.slice(0, charsShown);
+                        })()}
+                        <span style={{
+                            display: 'inline-block',
+                            width: '10px',
+                            height: '32px',
+                            backgroundColor: '#ff3e3e',
+                            marginLeft: '5px',
+                            verticalAlign: 'middle',
+                            opacity: Math.floor(frame / 10) % 2 === 0 ? 1 : 0
+                        }} />
+                    </div>
+                </div>
+
+                {/* 進行中のプログレスバー */}
+                <div style={{
+                    marginTop: 'auto',
+                    width: '100%',
+                    height: 4,
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    position: 'relative'
+                }}>
+                    <div style={{
+                        width: `${(frame / durationPerItem) * 100}%`,
+                        height: '100%',
+                        backgroundColor: '#ff3e3e',
+                        boxShadow: '0 0 10px #ff3e3e'
+                    }} />
+                </div>
             </div>
         </AbsoluteFill>
     );
