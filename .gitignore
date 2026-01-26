@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+.env
+venv/
+.venv/
+
+# Video files (huge)
+*.mp4
+*.mov
+*.avi
+*.mkv
+outputs/
+video/out/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db
