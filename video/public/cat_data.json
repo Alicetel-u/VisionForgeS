@@ -1,263 +1,146 @@
 [
   {
-    "id": 0,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "みなさん、こんにちは！ペットナビゲーターのカノンです！",
-    "audio": "audio/cat_scene_0.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 4.062666666666667
-  },
-  {
     "id": 1,
-    "speaker": "zundamon",
+    "speaker": "kanon",
+    "text": "ついに見つけたわ！伝説の『黄金ずんだパフェ』よ！",
     "emotion": "happy",
-    "text": "ずんだもんなのだ！今日は何を紹介するのだ？",
-    "audio": "audio/cat_scene_1.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.86
+    "action": "discovery",
+    "audio": "audio/t1.wav",
+    "image": "images/zunda_parfait.png",
+    "duration": 4.89,
+    "title": "伝説のパフェ争奪戦！",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 2,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "今日は、大人気のネコちゃんたちを紹介しますよ！",
-    "audio": "audio/cat_scene_2.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.8386666666666667
+    "speaker": "zundamon",
+    "text": "な、なななな…なんという輝きなのだあああ！",
+    "emotion": "surprised",
+    "action": "shiver",
+    "audio": "audio/t2.wav",
+    "image": "images/zunda_parfait.png",
+    "duration": 4.25,
+    "title": "伝説のパフェ争奪戦！",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 3,
-    "speaker": "zundamon",
-    "emotion": "surprised",
-    "text": "ネコなのだ！ずんだもん、ネコ大好きなのだ！",
-    "audio": "audio/cat_scene_3.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.8386666666666667
+    "speaker": "kanon",
+    "text": "これを食べれば、100年は健康でいられるって噂よ。",
+    "emotion": "normal",
+    "action": "thinking",
+    "audio": "audio/t3.wav",
+    "image": "images/zunda_parfait.png",
+    "duration": 4.26,
+    "title": "伝説의パフェ争奪戦！",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 4,
-    "speaker": "kanon",
+    "speaker": "zundamon",
+    "text": "ボクが！ボクが全部食べるのだ！",
     "emotion": "happy",
-    "text": "まずは、スコティッシュフォールド！前方に折れた耳が特徴的で、丸い顔がとっても愛らしいんです。",
-    "audio": "audio/cat_scene_4.wav",
-    "image": "images/cat_scottish.jpg",
-    "duration": 7.102666666666667
+    "action": "jump",
+    "audio": "audio/t4.wav",
+    "image": null,
+    "duration": 3.0,
+    "title": "伝説のパフェ争奪戦！",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 5,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "わあ！耳が折れてて可愛いのだ！",
-    "audio": "audio/cat_scene_5.wav",
-    "image": "images/cat_scottish.jpg",
-    "duration": 3.2626666666666666
+    "speaker": "kanon",
+    "text": "ダメよ！これは私のよ！絶対に渡さないわ！（怒）",
+    "emotion": "angry",
+    "action": "zoom_in",
+    "audio": "audio/t5.wav",
+    "image": null,
+    "duration": 4.81,
+    "title": "パフェを奪え！逃走劇開始",
+    "bgm": "bgm/bgm_active_chase.mp3"
   },
   {
     "id": 6,
-    "speaker": "kanon",
-    "emotion": "normal",
-    "text": "性格は穏やかで愛情深く、人懐っこいんですよ。甘えん坊で、犬のようだと言われることもあります。",
-    "audio": "audio/cat_scene_6.wav",
-    "image": "images/cat_scottish.jpg",
-    "duration": 7.518666666666666
+    "speaker": "zundamon",
+    "text": "だったら奪い取るまでなのだー！逃げるが勝ちなのだ！（逃走）",
+    "emotion": "happy",
+    "action": "run_right",
+    "audio": "audio/t6.wav",
+    "image": null,
+    "duration": 4.91,
+    "title": "パフェを奪え！逃走劇開始",
+    "bgm": "bgm/bgm_active_chase.mp3"
   },
   {
     "id": 7,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "いいのだ！一緒に遊びたいのだ！",
-    "audio": "audio/cat_scene_7.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.028
+    "speaker": "kanon",
+    "text": "あーっ！待ちなさい！この泥棒ずんだもんー！（猛追）",
+    "emotion": "surprised",
+    "action": "run_left",
+    "audio": "audio/t7.wav",
+    "image": null,
+    "duration": 4.42,
+    "title": "パフェを奪え！逃走劇開始",
+    "bgm": "bgm/bgm_active_chase.mp3"
   },
   {
     "id": 8,
-    "speaker": "kanon",
-    "emotion": "surprised",
-    "text": "次はマンチカン！短い足が特徴的で、とってもキュートなんです。",
-    "audio": "audio/cat_scene_8.wav",
-    "image": "images/cat_munchkin.jpg",
-    "duration": 5.076
+    "speaker": "zundamon",
+    "text": "ヒハハハ！追いつけないのだー！ボクの勝ち…もぐもぐ…",
+    "emotion": "happy",
+    "action": "jump",
+    "audio": "audio/t8.wav",
+    "image": null,
+    "duration": 4.81,
+    "title": "パフェを奪え！逃走劇開始",
+    "bgm": "bgm/bgm_active_chase.mp3"
   },
   {
     "id": 9,
-    "speaker": "zundamon",
-    "emotion": "surprised",
-    "text": "足が短いのだ！でもちゃんと走れるのだ？",
-    "audio": "audio/cat_scene_9.wav",
-    "image": "images/cat_munchkin.jpg",
-    "duration": 3.7213333333333334
+    "speaker": "kanon",
+    "text": "あ、言い忘れてたけど、それ、消費期限が江戸時代なのよね。",
+    "emotion": "normal",
+    "action": "thinking",
+    "audio": "audio/t9.wav",
+    "image": null,
+    "duration": 5.45,
+    "title": "衝撃の結末…！？",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 10,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "はい！短い足でも元気に走り回りますよ。好奇心旺盛で遊び好きな性格なんです。",
-    "audio": "audio/cat_scene_10.wav",
-    "image": "images/cat_munchkin.jpg",
-    "duration": 6.494666666666666
+    "speaker": "zundamon",
+    "text": "ガーン……！？お、お腹が…ゾクゾクするのだ…（絶望）",
+    "emotion": "panic",
+    "action": "shiver",
+    "audio": "audio/t10.wav",
+    "image": null,
+    "duration": 5.67,
+    "title": "衝撃の結末…！？",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 11,
-    "speaker": "zundamon",
+    "speaker": "kanon",
+    "text": "あらあら…救急車, 呼んであげましょうか？",
     "emotion": "happy",
-    "text": "元気なネコさんなのだ！",
-    "audio": "audio/cat_scene_11.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 2.110666666666667
+    "action": "nod",
+    "audio": "audio/t11.wav",
+    "image": null,
+    "duration": 3.99,
+    "title": "衝撃の結末…！？",
+    "bgm": "bgm/bgm_cute_main.mp3"
   },
   {
     "id": 12,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "そしてラグドール。ふさふさの白く長い被毛とブルーの瞳が美しいんです。",
-    "audio": "audio/cat_scene_12.wav",
-    "image": "images/cat_ragdoll.jpg",
-    "duration": 5.246666666666667
-  },
-  {
-    "id": 13,
     "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "わあ！ふわふわで綺麗なのだ！",
-    "audio": "audio/cat_scene_13.wav",
-    "image": "images/cat_ragdoll.jpg",
-    "duration": 3.156
-  },
-  {
-    "id": 14,
-    "speaker": "kanon",
-    "emotion": "normal",
-    "text": "名前は「ぬいぐるみ」という意味で、抱っこされると体を預けてリラックスするんですよ。性格も温厚で穏やかです。",
-    "audio": "audio/cat_scene_14.wav",
-    "image": "images/cat_ragdoll.jpg",
-    "duration": 8.5
-  },
-  {
-    "id": 15,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "抱っこしたいのだ！",
-    "audio": "audio/cat_scene_15.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 1.716
-  },
-  {
-    "id": 16,
-    "speaker": "kanon",
-    "emotion": "normal",
-    "text": "最後はブリティッシュショートヘア。丸い顔と大きな目、ずんぐりむっくりした体型が特徴です。",
-    "audio": "audio/cat_scene_16.wav",
-    "image": "images/cat_british.jpg",
-    "duration": 6.441333333333334
-  },
-  {
-    "id": 17,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "まんまるで可愛いのだ！",
-    "audio": "audio/cat_scene_17.wav",
-    "image": "images/cat_british.jpg",
-    "duration": 2.110666666666667
-  },
-  {
-    "id": 18,
-    "speaker": "kanon",
-    "emotion": "normal",
-    "text": "成長すると自立心が強くなって、一人で過ごすのも得意なんです。留守番も安心ですね。",
-    "audio": "audio/cat_scene_18.wav",
-    "image": "images/cat_british.jpg",
-    "duration": 6.494666666666666
-  },
-  {
-    "id": 19,
-    "speaker": "zundamon",
-    "emotion": "normal",
-    "text": "ネコを飼うときに気を付けることはあるのだ？",
-    "audio": "audio/cat_scene_19.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.3373333333333335
-  },
-  {
-    "id": 20,
-    "speaker": "kanon",
-    "emotion": "normal",
-    "text": "長毛種の場合は、毎日のブラッシングが大切です。それと、太りやすい品種もいるので、体重管理も重要ですよ。",
-    "audio": "audio/cat_scene_20.wav",
-    "image": "images/cat_grooming.jpg",
-    "duration": 8.841333333333333
-  },
-  {
-    "id": 21,
-    "speaker": "zundamon",
-    "emotion": "normal",
-    "text": "遊びの時間も必要なのだ？",
-    "audio": "audio/cat_scene_21.wav",
-    "image": "images/cat_playing.jpg",
-    "duration": 2.6546666666666665
-  },
-  {
-    "id": 22,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "もちろん！特に好奇心旺盛な子は、たくさん遊んであげると喜びますよ。",
-    "audio": "audio/cat_scene_22.wav",
-    "image": "images/cat_playing.jpg",
-    "duration": 5.641333333333334
-  },
-  {
-    "id": 23,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "カノン、ずんだもんもネコちゃん飼いたくなったのだ！",
-    "audio": "audio/cat_scene_23.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.8813333333333335
-  },
-  {
-    "id": 24,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "どの品種も魅力的でしたね！みなさんも、自分に合ったネコちゃんを見つけてくださいね！",
-    "audio": "audio/cat_scene_24.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 5.972
-  },
-  {
-    "id": 25,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "よし、ずんだもんも今日からネコになるのだ！語尾は『にゃ』にするのだにゃ！",
-    "audio": "audio/cat_scene_25.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 6.292
-  },
-  {
-    "id": 26,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "あはは、ずんだもんさんはそのままで十分可愛いですよ。皆さんは何色のネコちゃんが好きですか？ぜひコメント欄で教えてくださいね！",
-    "audio": "audio/cat_scene_26.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 9.204
-  },
-  {
-    "id": 27,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "またね、なのだ！",
-    "audio": "audio/cat_scene_27.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 1.908
-  },
-  {
-    "id": 28,
-    "speaker": "kanon",
-    "emotion": "happy",
-    "text": "それでは、また次回お会いしましょう！バイバイ！",
-    "audio": "audio/cat_scene_28.wav",
-    "image": "images/bg_thread.jpg",
-    "duration": 3.7533333333333334
+    "text": "助けてなのだー！ずんだパフェはもうこりごりなのだー！",
+    "emotion": "sad",
+    "action": "fall_down",
+    "audio": "audio/t12.wav",
+    "image": null,
+    "duration": 4.31,
+    "title": "衝撃の結末…！？",
+    "bgm": "bgm/bgm_cute_main.mp3"
   }
 ]

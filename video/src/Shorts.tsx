@@ -10,7 +10,8 @@ import {
     staticFile,
     Img,
 } from 'remotion';
-import { AnimeCharacter, Emotion } from './AnimeCharacter';
+import { AnimeCharacter, Emotion, Action } from './AnimeCharacter';
+import { ConcentrationLines, MoodOverlay, ImpactEffect, getShakeStyle, ScreenFlash, SpeedLines, EmblemEffect } from './VisualEffects';
 
 // データ読み込み
 import threadDataRaw from '../public/cat_data.json';
@@ -24,6 +25,8 @@ interface ThreadItem {
     bg_image?: string;
     duration?: number;
     emotion?: Emotion;
+    action?: Action;
+    bgm?: string;
 }
 
 interface ProcessedItem {
@@ -34,6 +37,8 @@ interface ProcessedItem {
     bg_image: string;
     durationInFrames: number;
     emotion: Emotion;
+    action: Action;
+    bgm: string;
 }
 
 interface Props {
@@ -52,14 +57,19 @@ export const Shorts: React.FC<Props> = ({ isPreview = false }) => {
         audio: item.audio,
         bg_image: item.image || item.bg_image || 'images/bg_thread.jpg',
         durationInFrames: Math.ceil((item.duration || 5) * fps),
-        emotion: item.emotion || 'normal'
+        emotion: item.emotion || 'normal',
+        action: item.action || 'none',
+        bgm: item.bgm || 'bgm/cute_standard.mp3'
     }));
 
     let cumulativeFrames = 0;
     let currentScene = threadData[0];
+    let sceneFrame = 0;
+
     for (const scene of threadData) {
         if (frame >= cumulativeFrames && frame < cumulativeFrames + scene.durationInFrames) {
             currentScene = scene;
+            sceneFrame = frame - cumulativeFrames;
             break;
         }
         cumulativeFrames += scene.durationInFrames;
@@ -69,88 +79,140 @@ export const Shorts: React.FC<Props> = ({ isPreview = false }) => {
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#000' }}>
-            {/* バックグラウンドBGM */}
-            <Audio src={staticFile('bgm.mp3')} volume={0.05} loop />
+            {/* シーンごとの背景BGM制御 */}
+            {(() => {
+                const bgmSequences: { bgm: string; start: number; duration: number }[] = [];
+                let currentPos = 0;
 
-            {/* 背景：部屋 */}
-            <AbsoluteFill>
-                <Img
-                    src={staticFile('images/bg_kanon_room.png')}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        filter: isPreview ? 'none' : 'blur(10px) brightness(0.7)',
-                    }}
-                />
-            </AbsoluteFill>
+                threadData.forEach((scene) => {
+                    const last = bgmSequences[bgmSequences.length - 1];
+                    if (last && last.bgm === scene.bgm) {
+                        last.duration += scene.durationInFrames;
+                    } else {
+                        bgmSequences.push({
+                            bgm: scene.bgm,
+                            start: currentPos,
+                            duration: scene.durationInFrames
+                        });
+                    }
+                    currentPos += scene.durationInFrames;
+                });
 
-            {/* 写真表示（ある場合のみ、上部に大きく表示） */}
-            {hasPhoto && (
+                return bgmSequences.map((seg, idx) => (
+                    <Sequence key={`bgm-${idx}`} from={seg.start} durationInFrames={seg.duration}>
+                        <Audio src={staticFile(seg.bgm)} volume={0.06} loop />
+                    </Sequence>
+                ));
+            })()}
+
+            {/* 1. コンテンツレイヤー（一番下の階層） */}
+            <div style={{ position: 'absolute', inset: 0 }}>
+                {/* 背景：部屋 */}
+                <AbsoluteFill>
+                    <Img
+                        src={staticFile('images/bg_kanon_room.png')}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            filter: isPreview ? 'none' : 'blur(10px) brightness(0.7)',
+                        }}
+                    />
+                </AbsoluteFill>
+
+                {/* 写真表示 */}
+                {hasPhoto && (
+                    <div style={{
+                        position: 'absolute',
+                        top: 150,
+                        left: '10%',
+                        width: '80%',
+                        zIndex: 200,
+                        transform: `scale(${spring({ frame: sceneFrame, fps, config: { damping: 20 } })})`,
+                    }}>
+                        <div style={{
+                            padding: 10,
+                            backgroundColor: '#fff',
+                            borderRadius: 20,
+                            boxShadow: isPreview ? 'none' : '0 15px 40px rgba(0,0,0,0.5)',
+                        }}>
+                            <Img
+                                src={staticFile(currentScene.bg_image)}
+                                style={{
+                                    width: '100%',
+                                    height: 400,
+                                    objectFit: 'cover',
+                                    borderRadius: 15,
+                                }}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {/* メインキャラクター */}
                 <div style={{
                     position: 'absolute',
-                    top: 150,
-                    left: '10%',
-                    width: '80%',
-                    zIndex: 200,
-                    transform: `scale(${spring({ frame, fps, config: { damping: 20 } })})`,
+                    bottom: 50,
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    zIndex: 100,
+                    ...getShakeStyle(sceneFrame,
+                        currentScene.emotion === 'panic' ? 4 :
+                            currentScene.emotion === 'surprised' && sceneFrame < 15 ? 7 :
+                                currentScene.emotion === 'angry' ? 2 : 0
+                    )
                 }}>
-                    <div style={{
-                        padding: 10,
-                        backgroundColor: '#fff',
-                        borderRadius: 20,
-                        boxShadow: isPreview ? 'none' : '0 15px 40px rgba(0,0,0,0.5)',
-                    }}>
-                        <Img
-                            src={staticFile(currentScene.bg_image)}
-                            style={{
-                                width: '100%',
-                                height: 400,
-                                objectFit: 'cover',
-                                borderRadius: 15,
-                            }}
-                        />
-                    </div>
+                    <AnimeCharacter
+                        type={currentScene.speaker}
+                        emotion={currentScene.emotion}
+                        action={currentScene.action}
+                        frame={sceneFrame}
+                        isSpeaking={true}
+                        lowQuality={isPreview}
+                        style={{ width: 900, height: 1300 }}
+                    />
                 </div>
-            )}
-
-            {/* メインキャラクター：喋っている方を画面中央下に大きく表示 */}
-            <div style={{
-                position: 'absolute',
-                bottom: -50,
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                zIndex: 100,
-            }}>
-                <AnimeCharacter
-                    type={currentScene.speaker}
-                    emotion={currentScene.emotion}
-                    isSpeaking={true}
-                    lowQuality={isPreview}
-                    style={{
-                        width: 800,
-                        height: 1200,
-                    }}
-                />
             </div>
 
-            {/* 縦型専用：巨大な字幕パネル */}
+            {/* 2. 演出エフェクトレイヤー（コンテンツの上に重ねる） */}
+            <MoodOverlay emotion={currentScene.emotion} opacity={0.5} />
+            {currentScene.emotion === 'panic' && <ConcentrationLines opacity={1.0} />}
+            {currentScene.emotion === 'angry' && <SpeedLines opacity={0.9} />}
+            {((currentScene.action as string) === 'run' || (currentScene.action as string) === 'run_left' || (currentScene.action as string) === 'run_right') && (
+                <SpeedLines opacity={0.9} direction="horizontal" />
+            )}
+
+            {currentScene.emotion === 'surprised' && sceneFrame < 15 && (
+                <>
+                    <ScreenFlash frame={sceneFrame} />
+                    <ImpactEffect frame={sceneFrame} />
+                </>
+            )}
+
+            {/* 漫符（Emblem Effects） */}
+            {currentScene.emotion === 'angry' && <EmblemEffect type="angry" frame={sceneFrame} x="70%" y="30%" />}
+            {currentScene.emotion === 'panic' && <EmblemEffect type="sweat" frame={sceneFrame} x="75%" y="35%" />}
+            {(currentScene.action as string) === 'discovery' || (currentScene.action as string) === 'thinking' ? (
+                <EmblemEffect type="lightbulb" frame={sceneFrame} x="50%" y="20%" />
+            ) : null}
+
+            {/* 3. 字幕レイヤー（最前面） */}
             <div style={{
                 position: 'absolute',
-                bottom: 120,
+                bottom: 40,
                 width: '100%',
                 padding: '0 40px',
                 zIndex: 1000,
                 pointerEvents: 'none'
             }}>
                 <div style={{
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    backdropFilter: 'blur(10px)',
-                    border: `6px solid ${currentScene.speaker === 'kanon' ? '#00bfff' : '#adff2f'}`,
-                    borderRadius: 30,
-                    padding: '30px',
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                    backdropFilter: 'blur(8px)',
+                    border: `4px solid ${currentScene.speaker === 'kanon' ? '#00bfff' : '#adff2f'}`,
+                    borderRadius: 24,
+                    padding: '24px',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
                 }}>
                     <div style={{
                         color: '#fff',
@@ -163,23 +225,25 @@ export const Shorts: React.FC<Props> = ({ isPreview = false }) => {
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
                         overflow: 'hidden',
-                        height: '125px', // 1.3 * 48 * 2
+                        height: '125px',
                     }}>
                         {currentScene.text}
                     </div>
                 </div>
             </div>
 
-            {/* オーディオの切り替え */}
-            {threadData.reduce((acc, scene) => {
-                const { sequences, cumulativeFrames: cf } = acc;
-                sequences.push(
-                    <Sequence key={scene.id} from={cf} durationInFrames={scene.durationInFrames}>
-                        <Audio src={staticFile(scene.audio)} />
-                    </Sequence>
-                );
-                return { sequences, cumulativeFrames: cf + scene.durationInFrames };
-            }, { sequences: [] as React.ReactNode[], cumulativeFrames: 0 }).sequences}
-        </AbsoluteFill>
+            {/* 音声シーケンス */}
+            {
+                threadData.reduce((acc, scene) => {
+                    const { sequences, cumulativeFrames: cf } = acc;
+                    sequences.push(
+                        <Sequence key={scene.id} from={cf} durationInFrames={scene.durationInFrames}>
+                            <Audio src={staticFile(scene.audio)} />
+                        </Sequence>
+                    );
+                    return { sequences, cumulativeFrames: cf + scene.durationInFrames };
+                }, { sequences: [] as React.ReactNode[], cumulativeFrames: 0 }).sequences
+            }
+        </AbsoluteFill >
     );
 };

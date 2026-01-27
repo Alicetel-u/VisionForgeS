@@ -10,7 +10,8 @@ import {
     staticFile,
     Img,
 } from 'remotion';
-import { AnimeCharacter, Emotion } from './AnimeCharacter';
+import { AnimeCharacter, Emotion, Action } from './AnimeCharacter';
+import { ConcentrationLines, MoodOverlay, ImpactEffect, getShakeStyle, ScreenFlash, SpeedLines, EmblemEffect, BetaFlash } from './VisualEffects';
 
 // データ読み込み
 import threadDataRaw from '../public/cat_data.json';
@@ -26,7 +27,9 @@ interface ThreadItem {
     image?: string;  // lionlop_data.jsonで使用
     duration?: number;
     emotion?: Emotion;
+    action?: Action;
     title?: string;
+    bgm?: string;
 }
 
 interface ProcessedItem {
@@ -39,6 +42,9 @@ interface ProcessedItem {
     bg_image: string;
     durationInFrames: number;
     emotion: Emotion;
+    action: Action;
+    bgm: string;
+    title?: string;
 }
 
 interface Props {
@@ -50,7 +56,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
     const { fps } = useVideoConfig();
 
     // 現在のフレームに該当するシーンを見つける
-    const threadDataForConfig: ProcessedItem[] = (threadDataRaw as ThreadItem[]).map(item => ({
+    const threadDataForConfig: ProcessedItem[] = (threadDataRaw as unknown as ThreadItem[]).map(item => ({
         id: item.id,
         speaker: item.speaker || 'kanon',
         text: item.text || '',
@@ -59,14 +65,19 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
         audio: item.audio,
         bg_image: item.image || item.bg_image || 'images/bg_thread.jpg',
         durationInFrames: Math.ceil((item.duration || 5) * fps),
-        emotion: item.emotion || 'normal'
+        emotion: item.emotion || 'normal',
+        action: item.action || 'none',
+        bgm: item.bgm || 'bgm/cute_standard.mp3',
+        title: item.title
     }));
 
     let cumulativeFrames = 0;
     let currentScene = threadDataForConfig[0];
+    let sceneFrame = 0;
     for (const scene of threadDataForConfig) {
         if (frame >= cumulativeFrames && frame < cumulativeFrames + scene.durationInFrames) {
             currentScene = scene;
+            sceneFrame = frame - cumulativeFrames;
             break;
         }
         cumulativeFrames += scene.durationInFrames;
@@ -77,62 +88,120 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#050505', color: '#fff', fontFamily: 'Inter, "Noto Sans JP", sans-serif' }}>
-            {/* Ambient Background Music */}
-            <Audio src={staticFile('bgm.mp3')} volume={0.05} loop />
+            {/* シーンごとの背景BGM制御 */}
+            {(() => {
+                const bgmSequences: { bgm: string; start: number; duration: number }[] = [];
+                let currentPos = 0;
 
-            {/* Background & Base Layers */}
-            <TheaterBackground scene={currentScene} isPreview={isPreview} />
+                threadDataForConfig.forEach((scene) => {
+                    const last = bgmSequences[bgmSequences.length - 1];
+                    if (last && last.bgm === scene.bgm) {
+                        last.duration += scene.durationInFrames;
+                    } else {
+                        bgmSequences.push({
+                            bgm: scene.bgm,
+                            start: currentPos,
+                            duration: scene.durationInFrames
+                        });
+                    }
+                    currentPos += scene.durationInFrames;
+                });
 
-            {/* キャラクター：二人並んで表示、話者を強調 */}
-            {/* ... (existing character logic) */}
+                return bgmSequences.map((seg, idx) => (
+                    <Sequence key={`bgm-${idx}`} from={seg.start} durationInFrames={seg.duration}>
+                        <Audio src={staticFile(seg.bgm)} volume={0.06} loop />
+                    </Sequence>
+                ));
+            })()}
+
+            {/* 背景レイヤー（固定）は一番下に移動するため、ここでは一旦削除（後ろで再定義されます） */}
+
+            {/* 背景レイヤー（固定） */}
             <div style={{
                 position: 'absolute',
-                bottom: 20,
-                width: '100%',
-                height: 1080 * 0.9,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                padding: '0 20px',
-                zIndex: 100,
-                pointerEvents: 'none'
+                inset: 0,
             }}>
-                {/* カノン（左側） */}
-                <div style={{
-                    opacity: currentScene.speaker === 'kanon' ? 1 : 0.8,
-                    transform: currentScene.speaker === 'kanon' ? 'scale(1.02)' : 'scale(0.98)',
-                    transition: 'opacity 0.3s ease, transform 0.3s ease'
-                }}>
-                    <AnimeCharacter
-                        type="kanon"
-                        emotion={currentScene.speaker === 'kanon' ? currentScene.emotion : 'normal'}
-                        isSpeaking={currentScene.speaker === 'kanon'}
-                        lowQuality={isPreview}
-                        style={{
-                            width: 520,
-                            height: 720,
-                        }}
-                    />
-                </div>
+                {/* Background & Base Layers */}
+                <TheaterBackground scene={currentScene} isPreview={isPreview} />
 
-                {/* ずんだもん（右側） */}
+                {/* キャラクター：端に寄せて重なりを防止 */}
                 <div style={{
-                    opacity: currentScene.speaker === 'zundamon' ? 1 : 0.8,
-                    transform: currentScene.speaker === 'zundamon' ? 'scale(1.02)' : 'scale(0.98)',
-                    transition: 'opacity 0.3s ease, transform 0.3s ease'
+                    position: 'absolute',
+                    bottom: 40,
+                    width: '100%',
+                    height: 1080 * 0.9,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-end',
+                    padding: '0 20px',
+                    zIndex: 100,
+                    pointerEvents: 'none',
+                    ...getShakeStyle(sceneFrame,
+                        currentScene.emotion === 'panic' ? 4 :
+                            currentScene.emotion === 'surprised' && sceneFrame < 15 ? 7 :
+                                currentScene.emotion === 'angry' ? 2 : 0
+                    )
                 }}>
-                    <AnimeCharacter
-                        type="zundamon"
-                        emotion={currentScene.speaker === 'zundamon' ? currentScene.emotion : 'normal'}
-                        isSpeaking={currentScene.speaker === 'zundamon'}
-                        lowQuality={isPreview}
-                        style={{
-                            width: 480,
-                            height: 680,
-                        }}
-                    />
+                    {/* カノン（左側） */}
+                    <div style={{
+                        transform: currentScene.speaker === 'kanon' ? 'scale(1.05) translateY(0px)' : 'scale(1.0) translateY(10px)',
+                        filter: `drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white) drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white) ${currentScene.speaker === 'kanon' ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}`,
+                        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    }}>
+                        <AnimeCharacter
+                            type="kanon"
+                            emotion={currentScene.speaker === 'kanon' ? currentScene.emotion : 'normal'}
+                            action={currentScene.speaker === 'kanon' ? currentScene.action : 'none'}
+                            frame={sceneFrame}
+                            isSpeaking={currentScene.speaker === 'kanon'}
+                            lowQuality={isPreview}
+                            style={{ width: 560, height: 740 }}
+                        />
+                    </div>
+
+                    {/* ずんだもん（右側） */}
+                    <div style={{
+                        transform: currentScene.speaker === 'zundamon' ? 'scale(1.05) translateY(0px)' : 'scale(1.0) translateY(10px)',
+                        filter: `drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white) drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white) ${currentScene.speaker === 'zundamon' ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}`,
+                        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    }}>
+                        <AnimeCharacter
+                            type="zundamon"
+                            emotion={currentScene.speaker === 'zundamon' ? currentScene.emotion : 'normal'}
+                            action={currentScene.speaker === 'zundamon' ? currentScene.action : 'none'}
+                            frame={sceneFrame}
+                            isSpeaking={currentScene.speaker === 'zundamon'}
+                            lowQuality={isPreview}
+                            style={{ width: 520, height: 720 }}
+                        />
+                    </div>
                 </div>
             </div>
+
+            {/* 2. 演出エフェクトレイヤー（コンテンツの上に重ねる） */}
+            <MoodOverlay emotion={currentScene.emotion} opacity={0.5} />
+            {currentScene.emotion === 'panic' && <ConcentrationLines opacity={1.0} />}
+            {currentScene.emotion === 'angry' && <SpeedLines opacity={0.9} />}
+            {((currentScene.action as string) === 'run' || (currentScene.action as string) === 'run_left' || (currentScene.action as string) === 'run_right') && (
+                <SpeedLines opacity={0.9} direction="horizontal" />
+            )}
+
+            {currentScene.emotion === 'surprised' && sceneFrame < 15 && (
+                <>
+                    <ScreenFlash frame={sceneFrame} />
+                    <ImpactEffect frame={sceneFrame} />
+                </>
+            )}
+
+            {/* 決定的な瞬間のベタフラッシュ（パニックの始まりや驚き） */}
+            {currentScene.emotion === 'panic' && sceneFrame < 25 && <BetaFlash frame={sceneFrame} opacity={0.7} />}
+
+            {/* 漫符（Emblem Effects）: 話しているキャラの位置に合わせる */}
+            {currentScene.emotion === 'angry' && <EmblemEffect type="angry" frame={sceneFrame} x={currentScene.speaker === 'kanon' ? '30%' : '70%'} y="25%" />}
+            {currentScene.emotion === 'panic' && <EmblemEffect type="sweat" frame={sceneFrame} x={currentScene.speaker === 'kanon' ? '35%' : '75%'} y="30%" />}
+            {((currentScene.action as string) === 'discovery' || (currentScene.action as string) === 'thinking') && (
+                <EmblemEffect type="lightbulb" frame={sceneFrame} x={currentScene.speaker === 'kanon' ? '25%' : '75%'} y="15%" />
+            )}
 
             {/* Text & Audio: タイムラインに沿って切り替え */}
             {threadDataForConfig.reduce((acc, scene) => {
@@ -182,7 +251,7 @@ const TheaterBackground: React.FC<{ scene: ProcessedItem; isPreview: boolean }> 
                 <div style={{
                     position: 'absolute',
                     left: '50%',
-                    top: 50,
+                    top: 20,
                     transform: `translateX(-50%) scale(${photoEntrance}) rotate(-0.5deg)`,
                     zIndex: 200,
                     filter: isPreview ? 'none' : 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))'
@@ -207,41 +276,6 @@ const TheaterBackground: React.FC<{ scene: ProcessedItem; isPreview: boolean }> 
                 </div>
             )}
 
-            {/* Headline Box */}
-            <div style={{
-                position: 'absolute',
-                top: 25,
-                left: 25,
-                zIndex: 2000,
-                display: 'flex',
-                flexDirection: 'column',
-                filter: isPreview ? 'none' : 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'
-            }}>
-                <div style={{
-                    backgroundColor: '#ff0000',
-                    color: '#fff',
-                    padding: '3px 15px',
-                    fontSize: 18,
-                    fontWeight: 900,
-                    width: 'fit-content',
-                    borderRadius: '5px 5px 0 0',
-                    letterSpacing: 2
-                }}>
-                    PET CHANNEL
-                </div>
-                <div style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                    color: '#fff',
-                    padding: '10px 25px',
-                    fontSize: 22,
-                    fontWeight: 900,
-                    borderLeft: '8px solid #ff0000',
-                    maxWidth: 450,
-                    lineHeight: 1.2
-                }}>
-                    カノン＆ずんだもんのネコ講座 🐱
-                </div>
-            </div>
         </AbsoluteFill>
     );
 };
@@ -263,7 +297,7 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
             {/* Subtitles */}
             <div style={{
                 position: 'absolute',
-                bottom: 40,
+                bottom: 20,
                 width: '100%',
                 display: 'flex',
                 justifyContent: 'center',
@@ -321,6 +355,59 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
                 zIndex: 1400,
                 pointerEvents: 'none'
             }} />
+
+            {/* Headline Box: ガラスモーフィズム & 動的タイトル */}
+            <div style={{
+                position: 'absolute',
+                top: 40,
+                left: 40,
+                zIndex: 2000,
+                display: 'flex',
+                flexDirection: 'column',
+                filter: isPreview ? 'none' : 'drop-shadow(0 15px 25px rgba(0,0,0,0.4))',
+                transform: `scale(${spring({ frame, fps, config: { damping: 20, mass: 0.5 } })})`,
+                opacity: 1,
+            }}>
+                <div style={{
+                    backgroundColor: '#ff3b30',
+                    color: '#fff',
+                    padding: '4px 15px',
+                    fontSize: 18,
+                    fontWeight: 900,
+                    width: 'fit-content',
+                    borderRadius: '8px 8px 0 0',
+                    letterSpacing: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    boxShadow: 'inset 0 0 10px rgba(255,255,255,0.3)'
+                }}>
+                    <div style={{
+                        width: 12,
+                        height: 12,
+                        backgroundColor: '#fff',
+                        borderRadius: '50%',
+                        opacity: frame % 30 < 15 ? 0.4 : 1
+                    }} />
+                    LIVE
+                </div>
+                <div style={{
+                    background: 'rgba(15, 15, 15, 0.8)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    color: '#fff',
+                    padding: '15px 30px',
+                    fontSize: 28,
+                    fontWeight: 900,
+                    borderLeft: '12px solid #ff3b30',
+                    borderRadius: '0 12px 12px 12px',
+                    maxWidth: 600,
+                    lineHeight: 1.2,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                }}>
+                    {(scene as any).title || 'カノン＆ずんだもん'}
+                </div>
+            </div>
         </AbsoluteFill>
     );
 };

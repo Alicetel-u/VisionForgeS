@@ -337,6 +337,40 @@
                 transform: rotate(360deg);
             }
         }
+
+        .scene-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .select-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+            font-size: 11px;
+            border-radius: 6px;
+            padding: 4px 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .select-custom:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-cyan);
+        }
+
+        .action-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            font-weight: 700;
+        }
+
+        /* --- JS logic --- */
     </style>
 </head>
 
@@ -344,7 +378,7 @@
     <div id="loading-overlay">
         <div style="text-align: center;">
             <span class="loader"></span>
-            <div style="margin-top: 20px; font-weight: 600;">音声を生成しています...</div>
+            <div style="margin-top: 20px; font-weight: 600;">処理中...</div>
         </div>
     </div>
 
@@ -366,7 +400,7 @@
         <div class="editor-panel">
             <div class="panel-header">
                 <div class="panel-title">Dialogue Script</div>
-                <div style="font-size: 12px; opacity: 0.5;">27 Scenes</div>
+                <div id="scene-count" style="font-size: 12px; opacity: 0.5;">0 Scenes</div>
             </div>
 
             <div class="dialogue-list" id="dialogue-list">
@@ -403,12 +437,6 @@
                 <div class="asset-card"><img src="http://localhost:3000/images/cat_ragdoll.jpg">
                     <div class="asset-info">cat_ragdoll.jpg</div>
                 </div>
-                <div class="asset-card"><img src="http://localhost:3000/images/cat_british.jpg">
-                    <div class="asset-info">cat_british.jpg</div>
-                </div>
-                <div class="asset-card"><img src="http://localhost:3000/images/cat_playing.jpg">
-                    <div class="asset-info">cat_playing.jpg</div>
-                </div>
             </div>
         </div>
     </div>
@@ -419,12 +447,20 @@
 
         let currentMode = 'landscape';
 
+        const ACTIONS = [
+            'none', 'jump', 'big_jump', 'nod', 'shake_head', 'shiver', 'run_left', 'run_right',
+            'fly_away', 'spin', 'zoom_in', 'back_off', 'angry_vibe', 'happy_hop', 'fall_down', 'thinking'
+        ];
+
+        const EMOTIONS = ['normal', 'happy', 'surprised', 'angry', 'sad', 'panic'];
+
         async function loadScript() {
             const res = await fetch(`${API_BASE}/script`);
             const data = await res.json();
             scriptData = data;
             renderScenes();
             updatePreviewUrl();
+            document.getElementById('scene-count').innerText = `${scriptData.length} Scenes`;
         }
 
         function setMode(mode) {
@@ -455,10 +491,22 @@
                 <div class="scene-item">
                     <div class="avatar ${scene.speaker}"></div>
                     <div class="bubble">
-                        <div class="speaker-name" style="color: var(--${scene.speaker === 'kanon' ? 'kanon' : 'zunda'}-color)">
-                            ${scene.speaker.toUpperCase()}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <div class="speaker-name" style="color: var(--${scene.speaker === 'kanon' ? 'kanon' : 'zunda'}-color)">
+                                ${scene.speaker.toUpperCase()}
+                            </div>
+                            ${scene.action !== 'none' ? `<div class="action-badge">${scene.action}</div>` : ''}
                         </div>
                         <textarea class="scene-text" oninput="updateText(${idx}, this.value)">${scene.text}</textarea>
+                        
+                        <div class="scene-meta">
+                            <select class="select-custom" onchange="updateEmotion(${idx}, this.value)">
+                                ${EMOTIONS.map(e => `<option value="${e}" ${scene.emotion === e ? 'selected' : ''}>${e}</option>`).join('')}
+                            </select>
+                            <select class="select-custom" onchange="updateAction(${idx}, this.value)">
+                                ${ACTIONS.map(a => `<option value="${a}" ${scene.action === a ? 'selected' : ''}>${a}</option>`).join('')}
+                            </select>
+                        </div>
                     </div>
                 </div>
             `).join('');
@@ -472,6 +520,16 @@
 
         function updateText(idx, val) {
             scriptData[idx].text = val;
+        }
+
+        function updateAction(idx, val) {
+            scriptData[idx].action = val;
+            renderScenes();
+        }
+
+        function updateEmotion(idx, val) {
+            scriptData[idx].emotion = val;
+            renderScenes();
         }
 
         async function saveScript() {
