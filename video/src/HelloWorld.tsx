@@ -10,211 +10,269 @@ import {
     staticFile,
     Img,
 } from 'remotion';
+import { AnimeCharacter, Emotion } from './AnimeCharacter';
 
-// 生成されたニュースデータを読み込む
-import newsDataRaw from '../public/news_data.json';
+// データ読み込み
+import threadDataRaw from '../public/news_data.json';
 
-interface NewsItem {
+interface ThreadItem {
     id: number;
-    title: string;
-    summary: string;
+    speaker?: 'metan' | 'zundamon' | 'kanon';
+    text?: string;
+    type?: 'narration' | 'comment';
+    comment_text?: string;
     audio: string;
-    image: string | null;
+    bg_image?: string;
+    duration?: number;
+    emotion?: Emotion;
+    title?: string;
 }
 
-const newsData = newsDataRaw as NewsItem[];
+interface ProcessedItem {
+    id: number;
+    speaker: 'metan' | 'zundamon' | 'kanon';
+    text: string;
+    type: 'narration' | 'comment';
+    comment_text?: string;
+    audio: string;
+    bg_image: string;
+    durationInFrames: number;
+    emotion: Emotion;
+}
+
+const threadData: ProcessedItem[] = (threadDataRaw as ThreadItem[]).map(item => ({
+    id: item.id,
+    speaker: item.speaker || 'kanon',
+    text: item.text || '',
+    type: item.type || 'narration',
+    comment_text: item.comment_text,
+    audio: item.audio,
+    bg_image: item.bg_image || 'images/bg_thread.jpg',
+    durationInFrames: Math.ceil((item.duration || 5) * 30),
+    emotion: item.emotion || 'normal'
+}));
 
 export const HelloWorld: React.FC = () => {
-    // 1ニュースあたりの表示時間
-    const durationPerItem = 450; // 15秒
+    const frame = useCurrentFrame();
+
+    // 現在のフレームに該当するシーンを見つける
+    let cumulativeFrames = 0;
+    let currentScene = threadData[0];
+    for (const scene of threadData) {
+        if (frame >= cumulativeFrames && frame < cumulativeFrames + scene.durationInFrames) {
+            currentScene = scene;
+            break;
+        }
+        cumulativeFrames += scene.durationInFrames;
+    }
 
     return (
-        <AbsoluteFill style={{ backgroundColor: '#000' }}>
-            {/* BGMの追加 */}
-            <Audio src={staticFile('bgm.mp3')} volume={0.2} loop />
+        <AbsoluteFill style={{ backgroundColor: '#050505', color: '#fff', fontFamily: 'Inter, "Noto Sans JP", sans-serif' }}>
+            {/* Ambient Background Music */}
+            <Audio src={staticFile('bgm.mp3')} volume={0.05} loop />
 
-            {newsData.map((news, index) => {
-                return (
-                    <Sequence
-                        key={news.id}
-                        from={index * durationPerItem}
-                        durationInFrames={durationPerItem}
-                    >
-                        <NewsScene news={news} />
+            {/* Background & Base Layers */}
+            <TheaterBackground scene={currentScene} />
+
+            {/* Character: 動画の最初から最後まで常に表示 */}
+            <div style={{
+                position: 'absolute',
+                bottom: 100,
+                width: '100%',
+                height: 1080 * 0.8,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'flex-end',
+                padding: '0 50px',
+                zIndex: 100,
+                pointerEvents: 'none'
+            }}>
+                <AnimeCharacter
+                    type="kanon"
+                    emotion={currentScene.emotion}
+                    isSpeaking={true} // 常に居るが、声に合わせて微動だにする
+                    style={{
+                        width: 650,
+                        height: 850,
+                        filter: 'drop-shadow(4px 4px 0px #000) drop-shadow(-4px -4px 0px #000) drop-shadow(4px -4px 0px #000) drop-shadow(-4px 4px 0px #000)',
+                        transform: `scale(1.1)`,
+                    }}
+                />
+            </div>
+
+            {/* Text & Audio: タイムラインに沿って切り替え */}
+            {threadData.reduce((acc, scene) => {
+                const { sequences, cumulativeFrames: cf } = acc;
+                sequences.push(
+                    <Sequence key={scene.id} from={cf} durationInFrames={scene.durationInFrames}>
+                        <TheaterUI scene={scene} />
                     </Sequence>
                 );
-            })}
+                return {
+                    sequences,
+                    cumulativeFrames: cf + scene.durationInFrames
+                };
+            }, { sequences: [] as React.ReactNode[], cumulativeFrames: 0 }).sequences}
         </AbsoluteFill>
     );
 };
 
-const NewsScene: React.FC<{ news: NewsItem }> = ({ news }) => {
+const TheaterBackground: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
     const frame = useCurrentFrame();
-    const { fps } = useVideoConfig();
-
-    // 1ニュースあたりの表示時間
-    const durationPerItem = 450;
-
-    // エントランスアニメーション
-    const entrance = spring({
-        frame,
-        fps,
-        config: { damping: 12 },
-    });
-
-    const opacity = interpolate(entrance, [0, 1], [0, 1]);
-
-    // 画像のズームアニメーション (Ken Burns Effect)
-    const imageScale = interpolate(frame, [0, durationPerItem], [1, 1.15]);
-
-    // テロップのフェードイン
-    const captionOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
-
-    // 結合したテキスト（タイトル + 概要）
-    const fullText = `${news.title}　${news.summary}`;
+    const bgScale = interpolate(frame % 300, [0, 300], [1.02, 1.05]);
 
     return (
-        <AbsoluteFill style={{ backgroundColor: '#000' }}>
-            {/* 音声の再生 */}
-            <Audio src={staticFile(news.audio)} />
-
-            {/* 背景画像（全画面） */}
-            <AbsoluteFill style={{ overflow: 'hidden' }}>
-                {news.image ? (
-                    <Img
-                        src={staticFile(news.image)}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            transform: `scale(${imageScale})`,
-                            opacity: opacity,
-                        }}
-                    />
-                ) : (
-                    <div
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            background: 'linear-gradient(135deg, #1a3a5a 0%, #050a10 100%)',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: 120 }}>NO IMAGE</span>
-                    </div>
-                )}
-                {/* 暗いグラデーションオーバーレイ（テロップを読みやすくする） */}
-                <AbsoluteFill
+        <AbsoluteFill>
+            <AbsoluteFill style={{ overflow: 'hidden', backgroundColor: '#fdfbf7' }}>
+                <Img
+                    src={staticFile('images/bg_kanon_room.png')}
                     style={{
-                        background: 'linear-gradient(180deg, transparent 0%, transparent 60%, rgba(0,0,0,0.7) 85%, rgba(0,0,0,0.95) 100%)',
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transform: `scale(${bgScale})`,
+                        filter: 'blur(4px) brightness(1.0)',
+                        opacity: 1.0
                     }}
                 />
             </AbsoluteFill>
 
-            {/* 上部：BREAKING NEWSバッジ */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: 40,
-                    left: 40,
-                    backgroundColor: '#ff3e3e',
-                    color: 'white',
-                    padding: '8px 24px',
-                    fontSize: 28,
-                    fontWeight: 'bold',
-                    letterSpacing: '2px',
-                    boxShadow: '0 4px 12px rgba(255, 62, 62, 0.5)',
-                    transform: `translateX(${interpolate(entrance, [0, 1], [-100, 0])}px)`,
-                    opacity: opacity,
-                    zIndex: 20,
-                }}
-            >
-                🔴 BREAKING NEWS
+            {/* Headline Box */}
+            <div style={{
+                position: 'absolute',
+                top: 40,
+                left: 40,
+                zIndex: 2000,
+                display: 'flex',
+                flexDirection: 'column',
+                filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))'
+            }}>
+                <div style={{
+                    backgroundColor: '#ff0000',
+                    color: '#fff',
+                    padding: '5px 20px',
+                    fontSize: 24,
+                    fontWeight: 900,
+                    width: 'fit-content',
+                    borderRadius: '5px 5px 0 0',
+                    letterSpacing: 2
+                }}>
+                    KANON NEWS
+                </div>
+                <div style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    color: '#fff',
+                    padding: '15px 30px',
+                    fontSize: 32,
+                    fontWeight: 900,
+                    borderLeft: '10px solid #ff0000',
+                    maxWidth: 600,
+                    lineHeight: 1.2
+                }}>
+                    【最新】ゲーム業界のホットニュースをお届け！
+                </div>
             </div>
+        </AbsoluteFill>
+    );
+};
 
-            {/* 下部：テロップ帯 */}
-            <div
-                style={{
+const TheaterUI: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
+    const frame = useCurrentFrame();
+    const { fps, width, height } = useVideoConfig();
+    const commentEntrance = spring({ frame, fps, config: { damping: 15 } });
+
+    return (
+        <AbsoluteFill>
+            <Audio src={staticFile(scene.audio)} />
+
+            {/* 5ch Layout Comment Box */}
+            {scene.type === 'comment' && (
+                <div style={{
                     position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '25%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    padding: '0 60px 40px 60px',
-                    opacity: captionOpacity,
-                    zIndex: 10,
-                }}
-            >
-                {/* テロップテキスト */}
-                <div
-                    style={{
-                        color: '#fff',
-                        fontSize: 42,
+                    top: height * 0.45,
+                    left: '50%',
+                    transform: `translate(-50%, -50%) scale(${commentEntrance})`,
+                    width: width * 0.55,
+                    background: '#efefef',
+                    border: '1px solid #ccc',
+                    boxShadow: '10px 10px 0 rgba(0,0,0,0.2)',
+                    zIndex: 500,
+                }}>
+                    <div style={{
+                        backgroundColor: '#e5edff',
+                        padding: '10px 20px',
+                        borderBottom: '1px solid #ccc',
+                        color: '#333',
+                        fontSize: 22,
                         fontWeight: 'bold',
-                        lineHeight: 1.4,
-                        textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)',
-                        fontFamily: 'sans-serif',
-                    }}
-                >
-                    {/* タイピングアニメーション */}
-                    {(() => {
-                        const typingStart = 20;
-                        const typingSpeed = 2.5; // 文字/フレーム（速度を調整可能）
-                        const charsShown = Math.floor(
-                            interpolate(
-                                frame,
-                                [typingStart, durationPerItem - 30],
-                                [0, fullText.length],
-                                {
-                                    extrapolateLeft: 'clamp',
-                                    extrapolateRight: 'clamp',
-                                }
-                            )
-                        );
-                        return fullText.slice(0, charsShown);
-                    })()}
-                    {/* 点滅カーソル */}
-                    <span
-                        style={{
-                            display: 'inline-block',
-                            width: '4px',
-                            height: '36px',
-                            backgroundColor: '#ff3e3e',
-                            marginLeft: '8px',
-                            verticalAlign: 'middle',
-                            opacity: Math.floor(frame / 15) % 2 === 0 ? 1 : 0,
-                        }}
-                    />
+                        display: 'flex',
+                        justifyContent: 'space-between'
+                    }}>
+                        <span>名無しさん@VisionForge</span>
+                        <span style={{ color: '#0066cc' }}>&gt;&gt; レスをみる</span>
+                    </div>
+                    <div style={{ padding: '30px 40px', color: '#000', fontSize: 40, fontWeight: 900, lineHeight: 1.5 }}>
+                        {scene.comment_text}
+                    </div>
                 </div>
+            )}
 
-                {/* プログレスバー */}
-                <div
-                    style={{
-                        marginTop: 20,
-                        width: '100%',
-                        height: 6,
-                        backgroundColor: 'rgba(255,255,255,0.15)',
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    }}
-                >
-                    <div
-                        style={{
-                            width: `${(frame / durationPerItem) * 100}%`,
-                            height: '100%',
-                            backgroundColor: '#ff3e3e',
-                            boxShadow: '0 0 15px #ff3e3e',
-                            transition: 'width 0.1s linear',
-                        }}
-                    />
+            {/* Subtitles */}
+            <div style={{
+                position: 'absolute',
+                bottom: 40,
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                zIndex: 1500,
+                pointerEvents: 'none'
+            }}>
+                <div style={{
+                    position: 'relative',
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '6px solid #00bfff',
+                    borderRadius: 25,
+                    padding: '25px 50px',
+                    width: '90%',
+                    minHeight: 120,
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                    transform: `scale(${spring({ frame, fps, config: { damping: 15 } })})`,
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        top: -45,
+                        left: 40,
+                        backgroundColor: '#00bfff',
+                        color: '#fff',
+                        padding: '5px 30px',
+                        borderRadius: '15px 15px 0 0',
+                        fontSize: 28,
+                        fontWeight: 900,
+                    }}>
+                        KANON
+                    </div>
+
+                    <div style={{
+                        fontSize: 44,
+                        fontWeight: 900,
+                        color: '#222',
+                        textAlign: 'left',
+                        lineHeight: 1.4,
+                    }}>
+                        {scene.text}
+                    </div>
                 </div>
             </div>
+
+            <div style={{
+                position: 'absolute',
+                bottom: 0,
+                width: '100%',
+                height: 300,
+                background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                zIndex: 1400,
+                pointerEvents: 'none'
+            }} />
         </AbsoluteFill>
     );
 };

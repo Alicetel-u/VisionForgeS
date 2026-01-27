@@ -1,23 +1,119 @@
 [
   {
     "id": 0,
-    "title": "衆院選きょう公示 12日間の選挙戦",
-    "summary": "",
-    "audio": "audio/news_voice_0.mp3",
-    "image": "images/news_image_0.jpg"
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "みなさん、こんにちは！ゲームナビゲーターのカノンです！",
+    "audio": "audio/kanon_scene_0.wav",
+    "image": "images/news_main.jpg",
+    "duration": 3.3813333333333335
   },
   {
     "id": 1,
-    "title": "介入直前手段 レートチェックとは",
-    "summary": "",
-    "audio": "audio/news_voice_1.mp3",
-    "image": null
+    "speaker": "kanon",
+    "emotion": "surprised",
+    "text": "今日の注目ニュースはこちら！「ARC Raiders」",
+    "audio": "audio/kanon_scene_1.wav",
+    "image": "images/news_main.jpg",
+    "duration": 3.3386666666666667
   },
   {
     "id": 2,
-    "title": "被告の手錠・腰縄 運用見直す通知",
-    "summary": "",
-    "audio": "audio/news_voice_2.mp3",
-    "image": null
+    "speaker": "kanon",
+    "emotion": "surprised",
+    "text": "，ソロでもチームロビーに参加できるように。",
+    "audio": "audio/kanon_scene_2.wav",
+    "image": "images/news_main.jpg",
+    "duration": 2.2826666666666666
+  },
+  {
+    "id": 3,
+    "speaker": "kanon",
+    "emotion": "surprised",
+    "text": "最新アップデート“Headwinds”の内容を公開が話題になっています！",
+    "audio": "audio/kanon_scene_3.wav",
+    "image": "images/news_main.jpg",
+    "duration": 4.512
+  },
+  {
+    "id": 4,
+    "speaker": "kanon",
+    "emotion": "panic",
+    "text": "ええっ！？これ、予想以上の急展開じゃないですか！？",
+    "audio": "audio/kanon_scene_4.wav",
+    "image": "images/news_main.jpg",
+    "duration": 3.3173333333333335
+  },
+  {
+    "id": 5,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "内容を詳しく見ていきましょう。",
+    "audio": "audio/kanon_scene_5.wav",
+    "image": "images/news_main.jpg",
+    "duration": 1.856
+  },
+  {
+    "id": 6,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "EmbarkStudiosは本日（2026年1月27日），PvPvEエクストラク",
+    "audio": "audio/kanon_scene_6.wav",
+    "image": "images/news_main.jpg",
+    "duration": 5.610666666666667
+  },
+  {
+    "id": 7,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "ションシューター「ARCRaiders」",
+    "audio": "audio/kanon_scene_7.wav",
+    "image": "images/news_main.jpg",
+    "duration": 1.5786666666666667
+  },
+  {
+    "id": 8,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "に実装される最新アップデート「Headwinds」の内容を公開した。",
+    "audio": "audio/kanon_scene_8.wav",
+    "image": "images/news_main.jpg",
+    "duration": 3.6373333333333333
+  },
+  {
+    "id": 9,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "アップデート時間の詳細は不明だが，現地時間（CET）...とのことですよ。",
+    "audio": "audio/kanon_scene_9.wav",
+    "image": "images/news_main.jpg",
+    "duration": 5.269333333333333
+  },
+  {
+    "id": 10,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "これ、個人的にもエンジニア心がくすぐられるというか、すごくワクワクしますね！",
+    "audio": "audio/kanon_scene_10.wav",
+    "image": "images/news_main.jpg",
+    "duration": 4.874666666666666
+  },
+  {
+    "id": 11,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "デザインも洗練されていますし、実際に体験できる日が待ち遠しいです！",
+    "audio": "audio/kanon_scene_11.wav",
+    "image": "images/news_main.jpg",
+    "duration": 4.384
+  },
+  {
+    "id": 12,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "みなさんはどう思いましたか？ぜひコメントで教えてくださいね！それじゃあ、またね！",
+    "audio": "audio/kanon_scene_12.wav",
+    "image": "images/news_main.jpg",
+    "duration": 5.248
   }
 ]
