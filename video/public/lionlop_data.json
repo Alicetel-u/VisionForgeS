@@ -1,0 +1,191 @@
+[
+  {
+    "id": 0,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "みなさん、こんにちは！ペットナビゲーターのカノンです！",
+    "audio": "audio/lionlop_scene_0.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 3.562666666666667
+  },
+  {
+    "id": 1,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "text": "ずんだもんなのだ！今日は何を紹介するのだ？",
+    "audio": "audio/lionlop_scene_1.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 3.36
+  },
+  {
+    "id": 2,
+    "speaker": "kanon",
+    "emotion": "surprised",
+    "text": "今日は、ライオンのたてがみのような毛並みが特徴的な、ライオンロップイヤーについて紹介します！",
+    "audio": "audio/lionlop_scene_2.wav",
+    "image": "images/lionlop_main.jpg",
+    "duration": 6.165333333333334
+  },
+  {
+    "id": 3,
+    "speaker": "zundamon",
+    "emotion": "surprised",
+    "text": "おお！ライオンみたいなウサギなのだ？すごく可愛いのだ！",
+    "audio": "audio/lionlop_scene_3.wav",
+    "image": "images/lionlop_main.jpg",
+    "duration": 4.16
+  },
+  {
+    "id": 4,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "そうなんです！顔の周りにふわふわの飾り毛があって、耳はスプーンのように丸く垂れているんですよ。",
+    "audio": "audio/lionlop_scene_4.wav",
+    "image": "images/lionlop_face.jpg",
+    "duration": 6.229333333333333
+  },
+  {
+    "id": 5,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "text": "本当だのだ！ふわふわで触りたくなるのだ！",
+    "audio": "audio/lionlop_scene_5.wav",
+    "image": "images/lionlop_face.jpg",
+    "duration": 3.168
+  },
+  {
+    "id": 6,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "体重は約1.5キロから3キロほどで、小さくて抱っこしやすいサイズなんです。",
+    "audio": "audio/lionlop_scene_6.wav",
+    "image": "images/lionlop_face.jpg",
+    "duration": 5.12
+  },
+  {
+    "id": 7,
+    "speaker": "zundamon",
+    "emotion": "normal",
+    "text": "性格はどうなのだ？人懐っこいのだ？",
+    "audio": "audio/lionlop_scene_7.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 3.1253333333333333
+  },
+  {
+    "id": 8,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "とっても人懐っこくて、甘えん坊な子が多いんですよ。抱っこや撫でられることが大好きなので、飼育初心者の方にもおすすめです！",
+    "audio": "audio/lionlop_scene_8.wav",
+    "image": "images/lionlop_happy.jpg",
+    "duration": 8.245333333333333
+  },
+  {
+    "id": 9,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "text": "いいのだ！一緒に遊べそうなのだ！",
+    "audio": "audio/lionlop_scene_9.wav",
+    "image": "images/lionlop_happy.jpg",
+    "duration": 2.624
+  },
+  {
+    "id": 10,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "ウサギは朝方と夕方に活発になるので、お世話のタイミングも大切なんです。日中は寝ていることが多いですよ。",
+    "audio": "audio/lionlop_scene_10.wav",
+    "image": "images/lionlop_eating.jpg",
+    "duration": 7.232
+  },
+  {
+    "id": 11,
+    "speaker": "zundamon",
+    "emotion": "normal",
+    "text": "なるほどなのだ。飼育で気を付けることはあるのだ？",
+    "audio": "audio/lionlop_scene_11.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 3.488
+  },
+  {
+    "id": 12,
+    "speaker": "kanon",
+    "emotion": "panic",
+    "text": "実は、長い毛を持つため、毛づくろいの際に毛を飲み込みやすくて、毛球症になりやすいんです！",
+    "audio": "audio/lionlop_scene_12.wav",
+    "image": "images/lionlop_care.jpg",
+    "duration": 6.314666666666667
+  },
+  {
+    "id": 13,
+    "speaker": "zundamon",
+    "emotion": "surprised",
+    "text": "えっ！それは大変なのだ！",
+    "audio": "audio/lionlop_scene_13.wav",
+    "image": "images/lionlop_care.jpg",
+    "duration": 2.2186666666666666
+  },
+  {
+    "id": 14,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "text": "こまめなブラッシングと、繊維質が豊富な牧草をたくさん与えることが大切です。あと、暑さにも弱いので温度管理も重要ですね。",
+    "audio": "audio/lionlop_scene_14.wav",
+    "image": "images/lionlop_care.jpg",
+    "duration": 8.757333333333333
+  },
+  {
+    "id": 15,
+    "speaker": "zundamon",
+    "emotion": "normal",
+    "text": "ちゃんとケアしてあげれば、長く一緒にいられるのだ！",
+    "audio": "audio/lionlop_scene_15.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 3.466666666666667
+  },
+  {
+    "id": 16,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "その通り！人によく懐くので、積極的にコミュニケーションを取ると、もっと仲良くなれますよ！",
+    "audio": "audio/lionlop_scene_16.wav",
+    "image": "images/lionlop_happy.jpg",
+    "duration": 6.474666666666667
+  },
+  {
+    "id": 17,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "text": "カノン、ずんだもんもウサギさん飼いたくなったのだ！",
+    "audio": "audio/lionlop_scene_17.wav",
+    "image": "images/lionlop_main.jpg",
+    "duration": 3.456
+  },
+  {
+    "id": 18,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "私も癒されました！みなさんもぜひ、この愛らしいライオンロップイヤーとの生活を検討してみてくださいね！",
+    "audio": "audio/lionlop_scene_18.wav",
+    "image": "images/lionlop_main.jpg",
+    "duration": 6.9013333333333335
+  },
+  {
+    "id": 19,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "text": "またね、なのだ！",
+    "audio": "audio/lionlop_scene_19.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 1.408
+  },
+  {
+    "id": 20,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "それでは、また次回お会いしましょう！バイバイ！",
+    "audio": "audio/lionlop_scene_20.wav",
+    "image": "images/bg_thread.jpg",
+    "duration": 3.2533333333333334
+  }
+]

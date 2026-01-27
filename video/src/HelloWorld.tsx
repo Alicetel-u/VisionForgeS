@@ -13,7 +13,7 @@ import {
 import { AnimeCharacter, Emotion } from './AnimeCharacter';
 
 // データ読み込み
-import threadDataRaw from '../public/news_data.json';
+import threadDataRaw from '../public/lionlop_data.json';
 
 interface ThreadItem {
     id: number;
@@ -23,6 +23,7 @@ interface ThreadItem {
     comment_text?: string;
     audio: string;
     bg_image?: string;
+    image?: string;  // lionlop_data.jsonで使用
     duration?: number;
     emotion?: Emotion;
     title?: string;
@@ -47,7 +48,7 @@ const threadData: ProcessedItem[] = (threadDataRaw as ThreadItem[]).map(item => 
     type: item.type || 'narration',
     comment_text: item.comment_text,
     audio: item.audio,
-    bg_image: item.bg_image || 'images/bg_thread.jpg',
+    bg_image: item.image || item.bg_image || 'images/bg_thread.jpg',  // imageを優先
     durationInFrames: Math.ceil((item.duration || 5) * 30),
     emotion: item.emotion || 'normal'
 }));
@@ -66,6 +67,9 @@ export const HelloWorld: React.FC = () => {
         cumulativeFrames += scene.durationInFrames;
     }
 
+    // 写真があるシーンかどうかをチェック
+    const hasPhoto = currentScene.bg_image && currentScene.bg_image !== 'images/bg_thread.jpg';
+
     return (
         <AbsoluteFill style={{ backgroundColor: '#050505', color: '#fff', fontFamily: 'Inter, "Noto Sans JP", sans-serif' }}>
             {/* Ambient Background Music */}
@@ -74,30 +78,52 @@ export const HelloWorld: React.FC = () => {
             {/* Background & Base Layers */}
             <TheaterBackground scene={currentScene} />
 
-            {/* Character: 動画の最初から最後まで常に表示 */}
+            {/* キャラクター：二人並んで表示、話者を強調 */}
             <div style={{
                 position: 'absolute',
-                bottom: 100,
+                bottom: 60,
                 width: '100%',
-                height: 1080 * 0.8,
+                height: 1080 * 0.85,
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: 'space-between',
                 alignItems: 'flex-end',
-                padding: '0 50px',
+                padding: '0 100px',
                 zIndex: 100,
                 pointerEvents: 'none'
             }}>
-                <AnimeCharacter
-                    type="kanon"
-                    emotion={currentScene.emotion}
-                    isSpeaking={true} // 常に居るが、声に合わせて微動だにする
-                    style={{
-                        width: 650,
-                        height: 850,
-                        filter: 'drop-shadow(4px 4px 0px #000) drop-shadow(-4px -4px 0px #000) drop-shadow(4px -4px 0px #000) drop-shadow(-4px 4px 0px #000)',
-                        transform: `scale(1.1)`,
-                    }}
-                />
+                {/* カノン（左側） */}
+                <div style={{
+                    opacity: currentScene.speaker === 'kanon' ? 1 : 0.5,
+                    transform: currentScene.speaker === 'kanon' ? 'scale(1.05)' : 'scale(0.95)',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease'
+                }}>
+                    <AnimeCharacter
+                        type="kanon"
+                        emotion={currentScene.speaker === 'kanon' ? currentScene.emotion : 'normal'}
+                        isSpeaking={currentScene.speaker === 'kanon'}
+                        style={{
+                            width: 550,
+                            height: 750,
+                        }}
+                    />
+                </div>
+
+                {/* ずんだもん（右側） */}
+                <div style={{
+                    opacity: currentScene.speaker === 'zundamon' ? 1 : 0.5,
+                    transform: currentScene.speaker === 'zundamon' ? 'scale(1.05)' : 'scale(0.95)',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease'
+                }}>
+                    <AnimeCharacter
+                        type="zundamon"
+                        emotion={currentScene.speaker === 'zundamon' ? currentScene.emotion : 'normal'}
+                        isSpeaking={currentScene.speaker === 'zundamon'}
+                        style={{
+                            width: 500,
+                            height: 700,
+                        }}
+                    />
+                </div>
             </div>
 
             {/* Text & Audio: タイムラインに沿って切り替え */}
@@ -119,10 +145,16 @@ export const HelloWorld: React.FC = () => {
 
 const TheaterBackground: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
     const frame = useCurrentFrame();
+    const { fps } = useVideoConfig();
     const bgScale = interpolate(frame % 300, [0, 300], [1.02, 1.05]);
+
+    // 写真があるかどうか
+    const hasPhoto = scene.bg_image && scene.bg_image !== 'images/bg_thread.jpg';
+    const photoEntrance = spring({ frame, fps, config: { damping: 20, mass: 0.5 } });
 
     return (
         <AbsoluteFill>
+            {/* 常に部屋の背景を表示 */}
             <AbsoluteFill style={{ overflow: 'hidden', backgroundColor: '#fdfbf7' }}>
                 <Img
                     src={staticFile('images/bg_kanon_room.png')}
@@ -136,6 +168,46 @@ const TheaterBackground: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
                     }}
                 />
             </AbsoluteFill>
+
+            {/* ウサギの写真を中央上部に配置 */}
+            {hasPhoto && (
+                <div style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: 120,
+                    transform: `translateX(-50%) scale(${photoEntrance}) rotate(-1deg)`,
+                    zIndex: 200,
+                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))'
+                }}>
+                    <div style={{
+                        padding: 15,
+                        backgroundColor: '#fff',
+                        borderRadius: 8,
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+                    }}>
+                        <Img
+                            src={staticFile(scene.bg_image)}
+                            style={{
+                                width: 480,
+                                height: 360,
+                                objectFit: 'cover',
+                                borderRadius: 5,
+                                display: 'block'
+                            }}
+                        />
+                        <div style={{
+                            marginTop: 10,
+                            fontSize: 18,
+                            fontWeight: 700,
+                            color: '#333',
+                            textAlign: 'center',
+                            fontFamily: 'serif'
+                        }}>
+                            📸 ライオンロップイヤー
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Headline Box */}
             <div style={{
@@ -157,19 +229,19 @@ const TheaterBackground: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
                     borderRadius: '5px 5px 0 0',
                     letterSpacing: 2
                 }}>
-                    KANON NEWS
+                    PET CHANNEL
                 </div>
                 <div style={{
                     backgroundColor: 'rgba(0, 0, 0, 0.85)',
                     color: '#fff',
                     padding: '15px 30px',
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: 900,
                     borderLeft: '10px solid #ff0000',
-                    maxWidth: 600,
+                    maxWidth: 500,
                     lineHeight: 1.2
                 }}>
-                    【最新】ゲーム業界のホットニュースをお届け！
+                    カノン＆ずんだもんのペット講座 🐰
                 </div>
             </div>
         </AbsoluteFill>
@@ -181,41 +253,14 @@ const TheaterUI: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
     const { fps, width, height } = useVideoConfig();
     const commentEntrance = spring({ frame, fps, config: { damping: 15 } });
 
+    // 話者の名前と色
+    const speakerInfo = scene.speaker === 'kanon'
+        ? { name: 'KANON', color: '#00bfff' }
+        : { name: 'ZUNDAMON', color: '#adff2f' };
+
     return (
         <AbsoluteFill>
             <Audio src={staticFile(scene.audio)} />
-
-            {/* 5ch Layout Comment Box */}
-            {scene.type === 'comment' && (
-                <div style={{
-                    position: 'absolute',
-                    top: height * 0.45,
-                    left: '50%',
-                    transform: `translate(-50%, -50%) scale(${commentEntrance})`,
-                    width: width * 0.55,
-                    background: '#efefef',
-                    border: '1px solid #ccc',
-                    boxShadow: '10px 10px 0 rgba(0,0,0,0.2)',
-                    zIndex: 500,
-                }}>
-                    <div style={{
-                        backgroundColor: '#e5edff',
-                        padding: '10px 20px',
-                        borderBottom: '1px solid #ccc',
-                        color: '#333',
-                        fontSize: 22,
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        justifyContent: 'space-between'
-                    }}>
-                        <span>名無しさん@VisionForge</span>
-                        <span style={{ color: '#0066cc' }}>&gt;&gt; レスをみる</span>
-                    </div>
-                    <div style={{ padding: '30px 40px', color: '#000', fontSize: 40, fontWeight: 900, lineHeight: 1.5 }}>
-                        {scene.comment_text}
-                    </div>
-                </div>
-            )}
 
             {/* Subtitles */}
             <div style={{
@@ -230,11 +275,11 @@ const TheaterUI: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
                 <div style={{
                     position: 'relative',
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '6px solid #00bfff',
+                    border: `6px solid ${speakerInfo.color}`,
                     borderRadius: 25,
                     padding: '25px 50px',
-                    width: '90%',
-                    minHeight: 120,
+                    width: '80%',
+                    minHeight: 100,
                     boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                     transform: `scale(${spring({ frame, fps, config: { damping: 15 } })})`,
                 }}>
@@ -242,18 +287,18 @@ const TheaterUI: React.FC<{ scene: ProcessedItem }> = ({ scene }) => {
                         position: 'absolute',
                         top: -45,
                         left: 40,
-                        backgroundColor: '#00bfff',
-                        color: '#fff',
+                        backgroundColor: speakerInfo.color,
+                        color: scene.speaker === 'zundamon' ? '#000' : '#fff',
                         padding: '5px 30px',
                         borderRadius: '15px 15px 0 0',
                         fontSize: 28,
                         fontWeight: 900,
                     }}>
-                        KANON
+                        {speakerInfo.name}
                     </div>
 
                     <div style={{
-                        fontSize: 44,
+                        fontSize: 40,
                         fontWeight: 900,
                         color: '#222',
                         textAlign: 'left',

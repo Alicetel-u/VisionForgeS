@@ -1,8 +1,8 @@
 import { Composition } from 'remotion';
 import { HelloWorld } from './HelloWorld';
-import newsDataRaw from '../public/news_data.json';
+import lionlopDataRaw from '../public/lionlop_data.json';
 
-const threadData = newsDataRaw as { id: number; duration?: number }[];
+const threadData = lionlopDataRaw as { id: number; duration?: number }[];
 const fps = 30;
 const totalDuration = threadData.reduce((acc, item) => {
     return acc + Math.ceil((item.duration || 5) * fps);
