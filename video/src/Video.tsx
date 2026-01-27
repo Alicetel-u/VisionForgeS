@@ -1,6 +1,6 @@
 import { Composition } from 'remotion';
 import { HelloWorld } from './HelloWorld';
-import { Shorts } from './Shorts';
+import { ZundamonEmotionTest } from './ZundamonEmotionTest';
 import catDataRaw from '../public/cat_data.json';
 
 const threadData = catDataRaw as { id: number; duration?: number }[];
@@ -12,7 +12,6 @@ const calculateDuration = (targetFps: number) => {
 };
 
 export const RemotionVideo: React.FC = () => {
-    const duration30fps = calculateDuration(30);
     const duration24fps = calculateDuration(24);
 
     return (
@@ -27,27 +26,13 @@ export const RemotionVideo: React.FC = () => {
                 height={720}
                 defaultProps={{ isPreview: true }}
             />
-
-            {/* ショート動画用：縦型（720x1280、24fps） */}
             <Composition
-                id="Shorts"
-                component={Shorts}
-                durationInFrames={duration24fps || 240}
+                id="ZundamonEmotionTest"
+                component={ZundamonEmotionTest}
+                durationInFrames={24 * 2 * 6} // 6 emotions * 2 seconds
                 fps={24}
-                width={720}
-                height={1280}
-                defaultProps={{ isPreview: true }}
-            />
-
-            {/* 本番用：高品質版（横型 1080p、30fps） */}
-            <Composition
-                id="VisionForgeLong"
-                component={HelloWorld}
-                durationInFrames={duration30fps || 300}
-                fps={30}
-                width={1920}
-                height={1080}
-                defaultProps={{ isPreview: false }}
+                width={1280}
+                height={720}
             />
         </>
     );

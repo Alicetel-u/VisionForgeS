@@ -1,7 +1,7 @@
 import React from 'react';
 import { interpolate, useCurrentFrame, spring, useVideoConfig, Img, staticFile } from 'remotion';
 
-export type Emotion = 'normal' | 'happy' | 'surprised' | 'angry' | 'sad' | 'panic';
+export type Emotion = 'normal' | 'happy' | 'surprised' | 'angry' | 'sad' | 'panic' | 'impressed';
 export type Action =
     | 'none'
     | 'jump'
@@ -133,8 +133,8 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         translate(${actionX}px, ${actionY - speechJump}px)
         rotate(${actionRotate}deg)
         skewX(${actionSkew}deg)
-        scaleX(${entrance * (1 + breatheX) * actionScaleX})
-        scaleY(${entrance * (1 + breatheY) * actionScaleY})
+        scaleX(${(1 + breatheX) * actionScaleX})
+        scaleY(${(1 + breatheY) * actionScaleY})
     `;
 
     // --- 各キャラクターのレンダリング部 ---
@@ -183,8 +183,8 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
                 <Img
                     src={staticFile(`images/characters/kanon/${fileName}`)}
                     style={{
-                        width: '100%',
-                        height: 'auto',
+                        height: '100%',
+                        width: 'auto',
                         objectFit: 'contain',
                         transformOrigin: 'bottom center',
                     }}
@@ -212,28 +212,51 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         );
     }
 
-    // ずんだもん (SVG)
-    const blink = Math.max(0, Math.sin(frame / 25) - 0.98) * 50;
-    const mouthOpen = isSpeaking ? Math.abs(Math.sin(frame / 3)) : 0;
+    if (type === 'zundamon') {
+        const zundaFilter = lowQuality ? 'none' : `drop-shadow(0 0 10px rgba(0,0,0,0.5)) ${emotionFilter}`;
 
+        // リップシンク (口パク)
+        // 4フレームごとに開閉 (FPS=24なら秒間6回パカパカ)
+        const mouthOpen = isSpeaking && Math.floor(frame / 4) % 2 === 0;
+        const suffix = mouthOpen ? 'open' : 'close';
+
+        // 基本の感情画像（書き出した5種類 + 追加分）
+        let fileName = `${emotion}_${suffix}.png`;
+
+        // 特殊なエイリアスがあればここで吸収（現在は厳密に一致）
+        // if (emotion === 'surprised') fileName = 'panic.png'; // 新アセットでsurprisedも生成済みのため不要
+
+        return (
+            <div style={{ ...containerStyle, width: style?.width || 500, height: style?.height || 700, filter: zundaFilter }}>
+                <Img
+                    src={staticFile(`images/characters/zundamon/${fileName}`)}
+                    style={{
+                        height: '100%',
+                        width: 'auto',
+                        objectFit: 'contain',
+                        transformOrigin: 'bottom center',
+                    }}
+                />
+                {/* ずんだもん専用感情エフェクト */}
+                <div style={{ position: 'absolute', top: 0, width: '100%', textAlign: 'center', pointerEvents: 'none' }}>
+                    {emotion === 'angry' && <div style={{ position: 'absolute', top: 120, right: 30, fontSize: 100, transform: `rotate(${Math.sin(frame / 2) * 10}deg)` }}>💢</div>}
+                    {emotion === 'surprised' && <div style={{ position: 'absolute', top: 50, fontSize: 130 }}>‼️</div>}
+                    {emotion === 'panic' && <div style={{ position: 'absolute', top: 100, fontSize: 130, filter: 'hue-rotate(180deg)', opacity: 0.7 }}>🌀</div>}
+                    {emotion === 'happy' && <div style={{ position: 'absolute', top: 80, right: 30, fontSize: 80 }}>✨</div>}
+                    {emotion === 'sad' && <div style={{ position: 'absolute', top: 200, left: 30, fontSize: 100, opacity: 0.8 }}>💧</div>}
+                </div>
+            </div>
+        );
+    }
+
+    // デフォルト（フォールバック）
     return (
         <div style={{ ...containerStyle, width: style?.width || 400, height: style?.height || 600 }}>
             <div style={{ position: 'absolute', top: 0, width: '100%', textAlign: 'center', pointerEvents: 'none' }}>
                 {emotion === 'angry' && <div style={{ position: 'absolute', top: 50, right: 50, fontSize: 80 }}>💢</div>}
                 {emotion === 'surprised' && <div style={{ position: 'absolute', top: 20, fontSize: 100 }}>‼️</div>}
             </div>
-            <svg width="400" height="600" viewBox="0 0 400 600" style={{ transformOrigin: 'bottom center' }}>
-                <path d="M 100 550 Q 200 200 300 550 Z" fill="#32cd32" stroke="#000" strokeWidth="8" />
-                <ellipse cx="200" cy="220" rx="100" ry="110" fill="#fff" stroke="#000" strokeWidth="8" />
-                <ellipse cx="160" cy="210" rx="20" ry={20 - blink} fill="#000" />
-                <ellipse cx="240" cy="210" rx="20" ry={20 - blink} fill="#000" />
-                <path
-                    d={`M 170 270 Q 200 ${270 + mouthOpen * 40} 230 270`}
-                    fill={isSpeaking ? "#ff6666" : "none"}
-                    stroke="#000"
-                    strokeWidth="6"
-                />
-            </svg>
+            <div style={{ width: '100%', height: '100%', backgroundColor: '#32cd32', borderRadius: '50% 50% 0 0', border: '8px solid black' }} />
         </div>
     );
 };

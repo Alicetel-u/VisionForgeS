@@ -34,7 +34,8 @@ def get_audio_duration(file_path):
 VOICEVOX_URL = "http://127.0.0.1:50021"
 SPEAKERS = {
     "metan": 2,      # 四国めたん
-    "zundamon": 3    # ずんだもん
+    "zundamon": 3,    # ずんだもん
+    "kanon": 10      # 雨晴はう（カノン用）
 }
 
 def generate_voice(text, speaker_id, output_path):

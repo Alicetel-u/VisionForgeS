@@ -127,7 +127,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                 {/* キャラクター：端に寄せて重なりを防止 */}
                 <div style={{
                     position: 'absolute',
-                    bottom: 40,
+                    bottom: -30, // さらに下げる
                     width: '100%',
                     height: 1080 * 0.9,
                     display: 'flex',
@@ -155,7 +155,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                             frame={sceneFrame}
                             isSpeaking={currentScene.speaker === 'kanon'}
                             lowQuality={isPreview}
-                            style={{ width: 560, height: 740 }}
+                            style={{ width: 460, height: 640 }}
                         />
                     </div>
 
@@ -172,7 +172,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                             frame={sceneFrame}
                             isSpeaking={currentScene.speaker === 'zundamon'}
                             lowQuality={isPreview}
-                            style={{ width: 520, height: 720 }}
+                            style={{ width: 500, height: 700 }}
                         />
                     </div>
                 </div>
@@ -287,8 +287,8 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
 
     // 話者の名前と色
     const speakerInfo = scene.speaker === 'kanon'
-        ? { name: 'KANON', color: '#00bfff' }
-        : { name: 'ZUNDAMON', color: '#adff2f' };
+        ? { name: 'かのん', color: '#00bfff' }
+        : { name: 'ずんだもん', color: '#adff2f' };
 
     return (
         <AbsoluteFill>
@@ -309,9 +309,12 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     border: `6px solid ${speakerInfo.color}`,
                     borderRadius: 25,
-                    padding: '25px 50px',
+                    padding: '15px 50px',
                     width: '80%',
-                    minHeight: 100,
+                    minHeight: 162,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
                     boxShadow: isPreview ? 'none' : '0 10px 30px rgba(0,0,0,0.3)',
                     transform: `scale(${spring({ frame, fps, config: { damping: 15 } })})`,
                 }}>
@@ -334,12 +337,10 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
                         fontWeight: 900,
                         color: '#222',
                         textAlign: 'left',
-                        lineHeight: 1.4,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
+                        lineHeight: 1.15,
                         overflow: 'hidden',
-                        height: '112px', // lineHeight(1.4) * fontSize(40) * 2 lines
+                        wordBreak: 'break-all',
+                        letterSpacing: '-0.5px',
                     }}>
                         {scene.text}
                     </div>
@@ -365,32 +366,8 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
                 display: 'flex',
                 flexDirection: 'column',
                 filter: isPreview ? 'none' : 'drop-shadow(0 15px 25px rgba(0,0,0,0.4))',
-                transform: `scale(${spring({ frame, fps, config: { damping: 20, mass: 0.5 } })})`,
                 opacity: 1,
             }}>
-                <div style={{
-                    backgroundColor: '#ff3b30',
-                    color: '#fff',
-                    padding: '4px 15px',
-                    fontSize: 18,
-                    fontWeight: 900,
-                    width: 'fit-content',
-                    borderRadius: '8px 8px 0 0',
-                    letterSpacing: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    boxShadow: 'inset 0 0 10px rgba(255,255,255,0.3)'
-                }}>
-                    <div style={{
-                        width: 12,
-                        height: 12,
-                        backgroundColor: '#fff',
-                        borderRadius: '50%',
-                        opacity: frame % 30 < 15 ? 0.4 : 1
-                    }} />
-                    LIVE
-                </div>
                 <div style={{
                     background: 'rgba(15, 15, 15, 0.8)',
                     backdropFilter: 'blur(12px)',
@@ -400,7 +377,7 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
                     fontSize: 28,
                     fontWeight: 900,
                     borderLeft: '12px solid #ff3b30',
-                    borderRadius: '0 12px 12px 12px',
+                    borderRadius: '12px',
                     maxWidth: 600,
                     lineHeight: 1.2,
                     border: '1px solid rgba(255,255,255,0.1)',
