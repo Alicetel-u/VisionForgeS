@@ -1,5 +1,6 @@
-moviepy==1.0.3
-Pillow
-python-dotenv
 feedparser
 gTTS
+python-dotenv
+requests
+Pillow
+moviepy==1.0.3

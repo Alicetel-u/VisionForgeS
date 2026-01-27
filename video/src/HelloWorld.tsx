@@ -26,10 +26,13 @@ const newsData = newsDataRaw as NewsItem[];
 
 export const HelloWorld: React.FC = () => {
     // 1ニュースあたりの表示時間
-    const durationPerItem = 210;
+    const durationPerItem = 450; // 15秒
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#000' }}>
+            {/* BGMの追加 */}
+            <Audio src={staticFile('bgm.mp3')} volume={0.2} loop />
+
             {newsData.map((news, index) => {
                 return (
                     <Sequence
@@ -50,7 +53,7 @@ const NewsScene: React.FC<{ news: NewsItem }> = ({ news }) => {
     const { fps } = useVideoConfig();
 
     // 1ニュースあたりの表示時間
-    const durationPerItem = 210;
+    const durationPerItem = 450;
 
     // エントランスアニメーション
     const entrance = spring({
@@ -62,15 +65,21 @@ const NewsScene: React.FC<{ news: NewsItem }> = ({ news }) => {
     const opacity = interpolate(entrance, [0, 1], [0, 1]);
 
     // 画像のズームアニメーション (Ken Burns Effect)
-    const imageScale = interpolate(frame, [0, 210], [1, 1.2]);
+    const imageScale = interpolate(frame, [0, durationPerItem], [1, 1.15]);
+
+    // テロップのフェードイン
+    const captionOpacity = interpolate(frame, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
+
+    // 結合したテキスト（タイトル + 概要）
+    const fullText = `${news.title}　${news.summary}`;
 
     return (
-        <AbsoluteFill style={{ flexDirection: 'row', display: 'flex' }}>
+        <AbsoluteFill style={{ backgroundColor: '#000' }}>
             {/* 音声の再生 */}
             <Audio src={staticFile(news.audio)} />
 
-            {/* 左側：画像セクション */}
-            <div style={{ flex: 1, overflow: 'hidden', position: 'relative', backgroundColor: '#1a1a1a' }}>
+            {/* 背景画像（全画面） */}
+            <AbsoluteFill style={{ overflow: 'hidden' }}>
                 {news.image ? (
                     <Img
                         src={staticFile(news.image)}
@@ -93,99 +102,117 @@ const NewsScene: React.FC<{ news: NewsItem }> = ({ news }) => {
                             alignItems: 'center',
                         }}
                     >
-                        <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: 100 }}>NO IMAGE</span>
+                        <span style={{ color: 'rgba(255,255,255,0.1)', fontSize: 120 }}>NO IMAGE</span>
                     </div>
                 )}
-                <AbsoluteFill style={{ background: 'linear-gradient(90deg, transparent 70%, rgba(0,0,0,1) 100%)' }} />
-            </div>
+                {/* 暗いグラデーションオーバーレイ（テロップを読みやすくする） */}
+                <AbsoluteFill
+                    style={{
+                        background: 'linear-gradient(180deg, transparent 0%, transparent 60%, rgba(0,0,0,0.7) 85%, rgba(0,0,0,0.95) 100%)',
+                    }}
+                />
+            </AbsoluteFill>
 
-            {/* 右側：テキストセクション */}
+            {/* 上部：BREAKING NEWSバッジ */}
             <div
                 style={{
-                    width: '45%',
-                    backgroundColor: '#000',
-                    padding: '60px',
+                    position: 'absolute',
+                    top: 40,
+                    left: 40,
+                    backgroundColor: '#ff3e3e',
+                    color: 'white',
+                    padding: '8px 24px',
+                    fontSize: 28,
+                    fontWeight: 'bold',
+                    letterSpacing: '2px',
+                    boxShadow: '0 4px 12px rgba(255, 62, 62, 0.5)',
+                    transform: `translateX(${interpolate(entrance, [0, 1], [-100, 0])}px)`,
+                    opacity: opacity,
+                    zIndex: 20,
+                }}
+            >
+                🔴 BREAKING NEWS
+            </div>
+
+            {/* 下部：テロップ帯 */}
+            <div
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '25%',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'center',
-                    borderLeft: '4px solid #ff3e3e',
+                    justifyContent: 'flex-end',
+                    padding: '0 60px 40px 60px',
+                    opacity: captionOpacity,
                     zIndex: 10,
                 }}
             >
+                {/* テロップテキスト */}
                 <div
                     style={{
-                        backgroundColor: '#ff3e3e',
-                        color: 'white',
-                        padding: '5px 20px',
-                        fontSize: 24,
+                        color: '#fff',
+                        fontSize: 42,
                         fontWeight: 'bold',
-                        marginBottom: 30,
-                        width: 'fit-content',
-                        transform: `translateX(${interpolate(entrance, [0, 1], [-50, 0])}px)`,
-                        opacity: opacity
+                        lineHeight: 1.4,
+                        textShadow: '0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)',
+                        fontFamily: 'sans-serif',
                     }}
                 >
-                    BREAKING NEWS
+                    {/* タイピングアニメーション */}
+                    {(() => {
+                        const typingStart = 20;
+                        const typingSpeed = 2.5; // 文字/フレーム（速度を調整可能）
+                        const charsShown = Math.floor(
+                            interpolate(
+                                frame,
+                                [typingStart, durationPerItem - 30],
+                                [0, fullText.length],
+                                {
+                                    extrapolateLeft: 'clamp',
+                                    extrapolateRight: 'clamp',
+                                }
+                            )
+                        );
+                        return fullText.slice(0, charsShown);
+                    })()}
+                    {/* 点滅カーソル */}
+                    <span
+                        style={{
+                            display: 'inline-block',
+                            width: '4px',
+                            height: '36px',
+                            backgroundColor: '#ff3e3e',
+                            marginLeft: '8px',
+                            verticalAlign: 'middle',
+                            opacity: Math.floor(frame / 15) % 2 === 0 ? 1 : 0,
+                        }}
+                    />
                 </div>
 
-                <div style={{ opacity: opacity, transform: `translateY(${interpolate(entrance, [0, 1], [30, 0])}px)` }}>
-                    <h2
-                        style={{
-                            color: '#fff',
-                            fontSize: 64,
-                            fontWeight: 900,
-                            marginBottom: 40,
-                            lineHeight: 1.2,
-                        }}
-                    >
-                        {news.title}
-                    </h2>
-
+                {/* プログレスバー */}
+                <div
+                    style={{
+                        marginTop: 20,
+                        width: '100%',
+                        height: 6,
+                        backgroundColor: 'rgba(255,255,255,0.15)',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    }}
+                >
                     <div
                         style={{
-                            color: '#bbb',
-                            fontSize: 32,
-                            lineHeight: 1.6,
-                            height: '240px',
-                            overflow: 'hidden',
-                            fontFamily: 'monospace',
-                        }}
-                    >
-                        {/* タイピングアニメーションの実装 */}
-                        {(() => {
-                            const typingStart = 30;
-                            const charsShown = Math.floor(interpolate(frame, [typingStart, durationPerItem - 30], [0, news.summary.length], {
-                                extrapolateLeft: 'clamp',
-                                extrapolateRight: 'clamp',
-                            }));
-                            return news.summary.slice(0, charsShown);
-                        })()}
-                        <span style={{
-                            display: 'inline-block',
-                            width: '10px',
-                            height: '32px',
+                            width: `${(frame / durationPerItem) * 100}%`,
+                            height: '100%',
                             backgroundColor: '#ff3e3e',
-                            marginLeft: '5px',
-                            verticalAlign: 'middle',
-                            opacity: Math.floor(frame / 10) % 2 === 0 ? 1 : 0
-                        }} />
-                    </div>
-                </div>
-
-                {/* 進行中のプログレスバー */}
-                <div style={{
-                    marginTop: 'auto',
-                    width: '100%',
-                    height: 4,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    position: 'relative'
-                }}>
-                    <div style={{
-                        width: `${(frame / durationPerItem) * 100}%`,
-                        height: '100%',
-                        backgroundColor: '#ff3e3e',
-                        boxShadow: '0 0 10px #ff3e3e'
-                    }} />
+                            boxShadow: '0 0 15px #ff3e3e',
+                            transition: 'width 0.1s linear',
+                        }}
+                    />
                 </div>
             </div>
         </AbsoluteFill>
