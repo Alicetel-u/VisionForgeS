@@ -8,9 +8,10 @@ interface Props {
     emotion: Emotion;
     isSpeaking: boolean;
     style?: React.CSSProperties;
+    lowQuality?: boolean;
 }
 
-export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, style }) => {
+export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, style, lowQuality = false }) => {
     const frame = useCurrentFrame();
     const { fps } = useVideoConfig();
 
@@ -35,23 +36,25 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
     let filter = 'none';
     let emotionScale = 1;
 
-    if (emotion === 'angry') {
-        emotionShakeX = Math.sin(frame * 1.5) * 8;
-        filter = 'sepia(0.4) hue-rotate(-50deg) saturate(1.8)';
-    } else if (emotion === 'sad') {
-        emotionShakeY = Math.sin(frame / 20) * 5;
-        filter = 'brightness(0.8) saturate(0.6) hue-rotate(180deg)';
-        emotionScale = 0.96;
-    } else if (emotion === 'happy') {
-        emotionShakeY = -Math.abs(Math.sin(frame / 5)) * 20;
-        filter = 'brightness(1.05) saturate(1.1)';
-        emotionScale = 1.04;
-    } else if (emotion === 'surprised') {
-        emotionScale = 1.05; // 控えめに拡大
-        emotionShakeY = Math.sin(frame * 1.5) * 2; // 揺れを小さく、少し遅く
-    } else if (emotion === 'panic') {
-        emotionScale = 1.08;
-        emotionShakeX = Math.sin(frame * 4) * 2; // 小刻みな震え
+    if (!lowQuality) {
+        if (emotion === 'angry') {
+            emotionShakeX = Math.sin(frame * 1.5) * 8;
+            filter = 'sepia(0.4) hue-rotate(-50deg) saturate(1.8)';
+        } else if (emotion === 'sad') {
+            emotionShakeY = Math.sin(frame / 20) * 5;
+            filter = 'brightness(0.8) saturate(0.6) hue-rotate(180deg)';
+            emotionScale = 0.96;
+        } else if (emotion === 'happy') {
+            emotionShakeY = -Math.abs(Math.sin(frame / 5)) * 20;
+            filter = 'brightness(1.05) saturate(1.1)';
+            emotionScale = 1.04;
+        } else if (emotion === 'surprised') {
+            emotionScale = 1.05; // 控えめに拡大
+            emotionShakeY = Math.sin(frame * 1.5) * 2; // 揺れを小さく、少し遅く
+        } else if (emotion === 'panic') {
+            emotionScale = 1.08;
+            emotionShakeX = Math.sin(frame * 4) * 2; // 小刻みな震え
+        }
     }
 
     // 登場アニメーション
@@ -61,7 +64,9 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
         config: { damping: 14, stiffness: 120 },
     });
 
-    const finalTransform = `
+    const finalTransform = lowQuality
+        ? `translate(${emotionShakeX}px, ${emotionShakeY - jump}px) scale(${entrance * (1 + breatheY) * emotionScale})`
+        : `
         translate(${emotionShakeX}px, ${emotionShakeY - jump}px)
         perspective(1000px)
         rotateY(${rotateY}deg)
@@ -72,8 +77,10 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
         scaleY(${entrance * (1 + breatheY) * emotionScale})
     `;
 
-    // KANON（今回追加された立ち絵切り替え式キャラクター）
+    // --- カノン専用の演出ロジック ---
     if (type === 'kanon') {
+        const kanonFilter = lowQuality ? 'none' : `drop-shadow(3px 3px 0px #000) drop-shadow(-3px -3px 0px #000) drop-shadow(3px 3px 0px #000) drop-shadow(-3px 3px 0px #000) ${filter}`;
+
         return (
             <div style={{
                 ...style,
@@ -85,8 +92,8 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                filter: `drop-shadow(3px 3px 0px #000) drop-shadow(-3px -3px 0px #000) drop-shadow(3px 3px 0px #000) drop-shadow(-3px 3px 0px #000) ${filter}`,
-                transition: 'filter 0.4s ease-in-out, opacity 0.3s ease-out'
+                filter: kanonFilter,
+                transition: 'filter 0.4s ease-in-out, opacity 0.3s ease-out',
             }}>
                 <Img
                     src={staticFile(`images/characters/kanon/${emotion}.png`)}
@@ -95,12 +102,12 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
                         height: 'auto',
                         objectFit: 'contain',
                         transformOrigin: 'bottom center',
-                        // 喋っている間は少し拡大縮小させて「口パク」っぽさを出す（簡易版）
+                        // 喋っている間は少し拡大縮小させて「喋っている感」を出す
                         scale: isSpeaking ? 1 + Math.abs(Math.sin(frame / 3)) * 0.02 : 1
                     }}
                 />
 
-                {/* 感情アイコン */}
+                {/* 感情アイコン（頭の上に浮かせる） */}
                 <div style={{ position: 'absolute', top: -40, width: '100%', textAlign: 'center', pointerEvents: 'none', zIndex: 10 }}>
                     {emotion === 'angry' && (
                         <div style={{ position: 'absolute', top: 120, right: 30, fontSize: 100, transform: `rotate(${Math.sin(frame / 2) * 20}deg)` }}>💢</div>
@@ -127,6 +134,7 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
 
     // メタン
     if (type === 'metan') {
+        const metanFilter = lowQuality ? 'none' : `drop-shadow(3px 3px 0px #000) drop-shadow(-3px -3px 0px #000) drop-shadow(3px -3px 0px #000) drop-shadow(-3px 3px 0px #000) ${filter}`;
         return (
             <div style={{
                 ...style,
@@ -138,7 +146,7 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
-                filter: `drop-shadow(3px 3px 0px #000) drop-shadow(-3px -3px 0px #000) drop-shadow(3px -3px 0px #000) drop-shadow(-3px 3px 0px #000) ${filter}`,
+                filter: metanFilter,
                 transition: 'filter 0.4s ease-in-out, opacity 0.3s ease-out'
             }}>
                 <Img
@@ -183,6 +191,8 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
     };
     const c = colors.zundamon;
 
+    const zundamonFilter = lowQuality ? 'none' : `drop-shadow(3px 3px 0px #000) drop-shadow(-3px -3px 0px #000) drop-shadow(3px -3px 0px #000) drop-shadow(-3px 3px 0px #000) ${filter}`;
+
     return (
         <div style={{
             ...style,
@@ -194,7 +204,7 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, isSpeaking, sty
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            filter: `drop-shadow(3px 3px 0px #000) drop-shadow(-3px -3px 0px #000) drop-shadow(3px -3px 0px #000) drop-shadow(-3px 3px 0px #000) ${filter}`,
+            filter: zundamonFilter,
             transition: 'filter 0.4s ease-in-out, opacity 0.3s ease-out'
         }}>
             <div style={{ position: 'absolute', top: 0, width: '100%', textAlign: 'center', pointerEvents: 'none' }}>

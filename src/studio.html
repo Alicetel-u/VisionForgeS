@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionForge Studio</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #080a0f;
+            --panel-bg: rgba(20, 25, 35, 0.7);
+            --accent-cyan: #00f2ff;
+            --accent-lime: #bcff00;
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --kanon-color: #00bfff;
+            --zunda-color: #adff2f;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1a2236 0%, transparent 50%);
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Header */
+        .header {
+            grid-column: span 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            height: 50px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-lime));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+        }
+
+        /* Editor Panel */
+        .editor-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            color: var(--text-dim);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .dialogue-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .dialogue-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .dialogue-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .scene-item {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-size: cover;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+        }
+
+        .avatar.kanon {
+            border-color: var(--kanon-color);
+            background-image: url('http://localhost:3000/images/characters/kanon/normal.png');
+        }
+
+        .avatar.zundamon {
+            border-color: var(--zunda-color);
+            background-color: var(--zunda-color);
+        }
+
+        .bubble {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+
+        .bubble:focus-within {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .speaker-name {
+            font-size: 10px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            opacity: 0.6;
+        }
+
+        .scene-text {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .controls {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f2ff, #0066ff);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+        }
+
+        .mode-btn {
+            padding: 6px 16px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent-cyan);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Preview Panel */
+        .preview-panel {
+            display: grid;
+            grid-template-rows: 1fr 200px;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .preview-panel.shorts-mode {
+            grid-template-columns: 400px 1fr;
+            grid-template-rows: 1fr;
+        }
+
+        .preview-panel.shorts-mode .assets-grid {
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 24px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .assets-grid {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+        }
+
+        .asset-card {
+            width: 140px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .asset-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .asset-info {
+            padding: 8px;
+            font-size: 10px;
+            opacity: 0.6;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--accent-cyan);
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading-overlay">
+        <div style="text-align: center;">
+            <span class="loader"></span>
+            <div style="margin-top: 20px; font-weight: 600;">音声を生成しています...</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <div class="logo">VISIONFORGE <span style="font-weight: 300;">STUDIO</span></div>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <div
+                    style="display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <button id="mode-landscape" class="mode-btn active"
+                        onclick="setMode('landscape')">Landscape</button>
+                    <button id="mode-shorts" class="mode-btn" onclick="setMode('shorts')">Shorts</button>
+                </div>
+                <div class="status-badge">● SERVER ACTIVE</div>
+            </div>
+        </div>
+
+        <!-- Editor -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <div class="panel-title">Dialogue Script</div>
+                <div style="font-size: 12px; opacity: 0.5;">27 Scenes</div>
+            </div>
+
+            <div class="dialogue-list" id="dialogue-list">
+                <!-- Scenes will be injected here -->
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" onclick="saveScript()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Save & Generate
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-panel">
+            <div class="video-container">
+                <iframe src="http://localhost:3000" id="remotion-preview"></iframe>
+            </div>
+
+            <div class="assets-grid">
+                <!-- Asset thumbnails -->
+                <div class="asset-card"><img src="http://localhost:3000/images/cat_scottish.jpg">
+                    <div class="asset-info">cat_scottish.jpg</div>
+                </div>
+                <div class="asset-card"><img src="http://localhost:3000/images/cat_munchkin.jpg">
+                    <div class="asset-info">cat_munchkin.jpg</div>
+                </div>
+                <div class="asset-card"><img src="http://localhost:3000/images/cat_ragdoll.jpg">
+                    <div class="asset-info">cat_ragdoll.jpg</div>
+                </div>
+                <div class="asset-card"><img src="http://localhost:3000/images/cat_british.jpg">
+                    <div class="asset-info">cat_british.jpg</div>
+                </div>
+                <div class="asset-card"><img src="http://localhost:3000/images/cat_playing.jpg">
+                    <div class="asset-info">cat_playing.jpg</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scriptData = [];
+        const API_BASE = "http://localhost:8000/api";
+
+        let currentMode = 'landscape';
+
+        async function loadScript() {
+            const res = await fetch(`${API_BASE}/script`);
+            const data = await res.json();
+            scriptData = data;
+            renderScenes();
+            updatePreviewUrl();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`mode-${mode}`).classList.add('active');
+
+            const panel = document.querySelector('.preview-panel');
+            if (mode === 'shorts') {
+                panel.classList.add('shorts-mode');
+            } else {
+                panel.classList.remove('shorts-mode');
+            }
+
+            updatePreviewUrl();
+        }
+
+        function updatePreviewUrl() {
+            const iframe = document.getElementById('remotion-preview');
+            const baseUrl = "http://localhost:3000";
+            const compId = currentMode === 'landscape' ? 'Preview' : 'Shorts';
+            iframe.src = `${baseUrl}/${compId}`;
+        }
+
+        function renderScenes() {
+            const container = document.getElementById('dialogue-list');
+            container.innerHTML = scriptData.map((scene, idx) => `
+                <div class="scene-item">
+                    <div class="avatar ${scene.speaker}"></div>
+                    <div class="bubble">
+                        <div class="speaker-name" style="color: var(--${scene.speaker === 'kanon' ? 'kanon' : 'zunda'}-color)">
+                            ${scene.speaker.toUpperCase()}
+                        </div>
+                        <textarea class="scene-text" oninput="updateText(${idx}, this.value)">${scene.text}</textarea>
+                    </div>
+                </div>
+            `).join('');
+
+            // Textareaの高さ自動調整
+            document.querySelectorAll('.scene-text').forEach(tx => {
+                tx.style.height = 'auto';
+                tx.style.height = tx.scrollHeight + 'px';
+            });
+        }
+
+        function updateText(idx, val) {
+            scriptData[idx].text = val;
+        }
+
+        async function saveScript() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+
+            try {
+                const res = await fetch(`${API_BASE}/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scenes: scriptData })
+                });
+
+                if (res.ok) {
+                    // Remotionプレビューをリフレッシュ
+                    document.getElementById('remotion-preview').contentWindow.location.reload();
+                } else {
+                    alert('保存に失敗しました');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('エラーが発生しました');
+            } finally {
+                overlay.style.display = 'none';
+            }
+        }
+
+        window.onload = loadScript;
+    </script>
+</body>
+
+</html>

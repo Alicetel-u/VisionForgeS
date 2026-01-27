@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "remotion preview src/index.ts",
-    "build": "remotion render src/index.ts HelloWorld out/video.mp4"
+    "build": "remotion render src/index.ts VisionForgeLong out/cat_video.mp4",
+    "build:fast": "remotion render src/index.ts VisionForgeLong out/cat_video_fast.mp4 --width=1280 --height=720 --fps=24 --concurrency=8",
+    "build:ultra": "remotion render src/index.ts VisionForgeLong out/cat_video_ultra.mp4 --width=854 --height=480 --fps=20 --concurrency=8",
+    "build:gpu-nvidia": "remotion render src/index.ts VisionForgeLong out/cat_video_gpu.mov --width=854 --height=480 --fps=20 --concurrency=8 --codec=h264-nvenc",
+    "build:gpu-intel": "remotion render src/index.ts VisionForgeLong out/cat_video_gpu.mov --width=854 --height=480 --fps=20 --concurrency=8 --codec=h264-qsv",
+    "build:gpu-amd": "remotion render src/index.ts VisionForgeLong out/cat_video_gpu.mov --width=854 --height=480 --fps=20 --concurrency=8 --codec=h264-amf"
   },
   "dependencies": {
     "react": "^18.0.0",
