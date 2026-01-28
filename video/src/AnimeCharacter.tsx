@@ -1,7 +1,7 @@
 import React from 'react';
 import { interpolate, useCurrentFrame, spring, useVideoConfig, Img, staticFile } from 'remotion';
 
-export type Emotion = 'normal' | 'happy' | 'surprised' | 'angry' | 'sad' | 'panic' | 'impressed';
+export type Emotion = 'normal' | 'happy' | 'surprised' | 'angry' | 'sad' | 'panic' | 'impressed' | 'sleepy' | 'money' | 'broke' | 'injured' | 'kick' | 'despair';
 export type Action =
     | 'none'
     | 'jump'
@@ -145,6 +145,9 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         if (emotion === 'angry') emotionFilter = 'sepia(0.3) saturate(2)';
         else if (emotion === 'sad') emotionFilter = 'brightness(0.8) saturate(0.5)';
         else if (emotion === 'happy') emotionFilter = 'brightness(1.1)';
+        else if (emotion === 'injured') emotionFilter = 'sepia(0.2) brightness(0.9)';
+        else if (emotion === 'sleepy') emotionFilter = 'brightness(0.95) contrast(0.9)';
+        else if (emotion === 'despair') emotionFilter = 'brightness(0.8) saturate(0.3) hue-rotate(200deg)';
     }
 
     const containerStyle: React.CSSProperties = {
@@ -196,6 +199,12 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
                     {emotion === 'happy' && <div style={{ position: 'absolute', top: 80, right: 30, fontSize: 80 }}>✨</div>}
                     {emotion === 'sad' && <div style={{ position: 'absolute', top: 220, left: 80, fontSize: 90 }}>💧</div>}
                     {emotion === 'panic' && <div style={{ position: 'absolute', top: 50, fontSize: 130, transform: `rotate(${frame * 5}deg)` }}>🌀</div>}
+                    {emotion === 'money' && <div style={{ position: 'absolute', top: 100, right: 50, fontSize: 100 }}>🤑</div>}
+                    {emotion === 'broke' && <div style={{ position: 'absolute', top: 250, left: 60, fontSize: 90 }}>💸</div>}
+                    {emotion === 'sleepy' && <div style={{ position: 'absolute', top: 80, left: 40, fontSize: 80 }}>💤</div>}
+                    {emotion === 'injured' && <div style={{ position: 'absolute', top: 150, right: 20, fontSize: 90 }}>🩹</div>}
+                    {emotion === 'kick' && <div style={{ position: 'absolute', bottom: 150, left: 50, fontSize: 120 }}>💥</div>}
+                    {emotion === 'despair' && <div style={{ position: 'absolute', top: 120, fontSize: 130, filter: 'grayscale(1)', opacity: 0.8 }}>👻</div>}
                 </div>
             </div>
         );

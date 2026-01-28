@@ -153,7 +153,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                                 {/* カノン（左側） */}
                                 <div style={{
                                     transform: currentScene.id < 13 && currentScene.speaker === 'kanon' ? 'scale(1.05) translateY(0px)' : 'scale(1.0) translateY(10px)',
-                                    filter: `drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white) drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white) ${currentScene.speaker === 'kanon' ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}`,
+                                    filter: `drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white) drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white) ${(currentScene.id >= 13 || currentScene.speaker === 'kanon') ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}`,
                                     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                                 }}>
                                     <AnimeCharacter
@@ -170,7 +170,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                                 {/* ずんだもん（右側） */}
                                 <div style={{
                                     transform: currentScene.id < 13 && currentScene.speaker === 'zundamon' ? 'scale(1.05) translateY(0px)' : 'scale(1.0) translateY(10px)',
-                                    filter: `drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white) drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white) ${currentScene.speaker === 'zundamon' ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}`,
+                                    filter: `drop-shadow(4px 0 0 white) drop-shadow(-4px 0 0 white) drop-shadow(0 4px 0 white) drop-shadow(0 -4px 0 white) ${(currentScene.id >= 13 || currentScene.speaker === 'zundamon') ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}`,
                                     transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                                 }}>
                                     <AnimeCharacter
@@ -226,7 +226,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
 
 const TheaterBackground: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ scene, isPreview }) => {
     const frame = useCurrentFrame();
-    const bgScale = interpolate(frame % 300, [0, 300], [1.02, 1.05]);
+    const bgScale = 1.0; // 動きを停止（固定スケール）
 
     const isEndingPart = scene.id >= 13;
     const bgImage = isEndingPart ? (scene.bg_image || 'images/bg_ending_neon.jpg') : 'images/bg_kanon_room.png';
@@ -257,7 +257,7 @@ const TheaterBackground: React.FC<{ scene: ProcessedItem; isPreview: boolean }> 
                     filter: isPreview ? 'none' : 'drop-shadow(0 25px 50px rgba(0,0,0,0.6))'
                 }}>
                     <div style={{
-                        padding: '12px 12px 45px 12px',
+                        padding: '12px 12px 12px 12px',
                         backgroundColor: '#fff',
                         borderRadius: 4,
                         boxShadow: isPreview ? 'none' : 'inset 0 0 10px rgba(0,0,0,0.1)',
@@ -273,18 +273,6 @@ const TheaterBackground: React.FC<{ scene: ProcessedItem; isPreview: boolean }> 
                                     display: 'block'
                                 }}
                             />
-                        </div>
-                        <div style={{
-                            position: 'absolute',
-                            bottom: 12,
-                            width: '100%',
-                            textAlign: 'center',
-                            fontFamily: '"Caveat", cursive, sans-serif',
-                            color: '#666',
-                            fontSize: 18,
-                            left: 0
-                        }}>
-                            Evidence Photo #0{scene.id}
                         </div>
                     </div>
                 </div>
@@ -367,32 +355,34 @@ const TheaterUI: React.FC<{ scene: ProcessedItem; isPreview: boolean }> = ({ sce
                 pointerEvents: 'none'
             }} />
 
-            <div style={{
-                position: 'absolute',
-                top: 40,
-                left: 40,
-                zIndex: 2000,
-                display: 'flex',
-                flexDirection: 'column',
-                filter: isPreview ? 'none' : 'drop-shadow(0 15px 25px rgba(0,0,0,0.4))',
-                opacity: 1,
-            }}>
+            {scene.id < 13 && (
                 <div style={{
-                    background: 'rgba(15, 15, 15, 0.8)',
-                    backdropFilter: 'blur(12px)',
-                    color: '#fff',
-                    padding: '15px 30px',
-                    fontSize: 28,
-                    fontWeight: 900,
-                    borderLeft: '12px solid #ff3b30',
-                    borderRadius: '12px',
-                    maxWidth: 600,
-                    lineHeight: 1.2,
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    position: 'absolute',
+                    top: 40,
+                    left: 40,
+                    zIndex: 2000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    filter: isPreview ? 'none' : 'drop-shadow(0 15px 25px rgba(0,0,0,0.4))',
+                    opacity: 1,
                 }}>
-                    {scene.title || 'カノン＆ずんだもん'}
+                    <div style={{
+                        background: 'rgba(15, 15, 15, 0.8)',
+                        backdropFilter: 'blur(12px)',
+                        color: '#fff',
+                        padding: '15px 30px',
+                        fontSize: 28,
+                        fontWeight: 900,
+                        borderLeft: '12px solid #ff3b30',
+                        borderRadius: '12px',
+                        maxWidth: 600,
+                        lineHeight: 1.2,
+                        border: '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                        {scene.title || 'カノン＆ずんだもん'}
+                    </div>
                 </div>
-            </div>
+            )}
         </AbsoluteFill>
     );
 };
