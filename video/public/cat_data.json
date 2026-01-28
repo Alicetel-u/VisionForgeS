@@ -9,7 +9,7 @@
     "id": 1,
     "audio": "audio/isekai_0.wav",
     "duration": 7.498666666666666,
-    "bg_image": "images/bg_town.png"
+    "bg_image": "images/isekai_logo.png"
   },
   {
     "speaker": "zundamon",
@@ -20,18 +20,18 @@
     "id": 2,
     "audio": "audio/isekai_1.wav",
     "duration": 5.685333333333333,
-    "bg_image": "images/bg_town.png"
+    "bg_image": "images/isekai_collab_title.png"
   },
   {
     "speaker": "kanon",
     "emotion": "angry",
     "action": "thinking",
     "title": "異世界∞異世界の衝撃サ終！",
-    "text": "無に還るわ。正確には2026年4月。リリースからたった1年3ヶ月の短命だったわね。",
+    "text": "無に還るわ。正確には2026年4月。リリースからたった1年 3ヶ月の短命だったわね。",
     "id": 3,
     "audio": "audio/isekai_2.wav",
     "duration": 6.368,
-    "bg_image": "images/bg_town.png"
+    "bg_image": "images/isekai_collab_2nd_opening.png"
   },
   {
     "speaker": "zundamon",
@@ -42,7 +42,7 @@
     "id": 4,
     "audio": "audio/isekai_3.wav",
     "duration": 5.301333333333333,
-    "bg_image": "images/bg_town.png"
+    "bg_image": "images/isekai_collab_3rd.png"
   },
   {
     "speaker": "kanon",
@@ -54,7 +54,7 @@
     "id": 5,
     "audio": "audio/isekai_4.wav",
     "duration": 8.629333333333333,
-    "bg_image": "images/bg_street.png"
+    "bg_image": "images/isekai_collab_title.png"
   },
   {
     "speaker": "zundamon",
@@ -65,7 +65,7 @@
     "id": 6,
     "audio": "audio/isekai_5.wav",
     "duration": 7.072,
-    "bg_image": "images/bg_street.png"
+    "bg_image": "images/isekai_collab_battle.jpg"
   },
   {
     "speaker": "kanon",
@@ -76,7 +76,7 @@
     "id": 7,
     "audio": "audio/isekai_6.wav",
     "duration": 7.253333333333333,
-    "bg_image": "images/bg_street.png"
+    "bg_image": "images/isekai_collab_1.jpg"
   },
   {
     "speaker": "zundamon",
@@ -87,7 +87,7 @@
     "id": 8,
     "audio": "audio/isekai_7.wav",
     "duration": 5.632,
-    "bg_image": "images/bg_street.png"
+    "bg_image": "images/isekai_collab_2nd.png"
   },
   {
     "speaker": "kanon",
@@ -99,7 +99,7 @@
     "id": 9,
     "audio": "audio/isekai_8.wav",
     "duration": 5.888,
-    "bg_image": "images/bg_park.png"
+    "bg_image": "images/isekai_collab_sword.png"
   },
   {
     "speaker": "zundamon",
@@ -110,7 +110,7 @@
     "id": 10,
     "audio": "audio/isekai_9.wav",
     "duration": 3.4346666666666668,
-    "bg_image": "images/bg_park.png"
+    "bg_image": "images/isekai_collab_sword.png"
   },
   {
     "speaker": "kanon",
@@ -121,7 +121,7 @@
     "id": 11,
     "audio": "audio/isekai_10.wav",
     "duration": 4.597333333333333,
-    "bg_image": "images/bg_park.png"
+    "bg_image": "images/isekai_collab_3rd.png"
   },
   {
     "speaker": "zundamon",
@@ -132,6 +132,42 @@
     "id": 12,
     "audio": "audio/isekai_11.wav",
     "duration": 4.778666666666667,
-    "bg_image": "images/bg_park.png"
+    "bg_image": "images/isekai_collab_2nd_opening.png"
+  },
+  {
+    "id": 13,
+    "speaker": "zundamon",
+    "emotion": "panic",
+    "text": "ふぅ…今回も濃いニュースだったのだ。ボク, もうお腹いっぱいなのだ。",
+    "audio": "audio/ending_0.wav",
+    "bg_image": "images/bg_ending_neon.jpg",
+    "duration": 4.8853333333333335
+  },
+  {
+    "id": 14,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "何言ってるの, まだ始まったばかりよ。次も面白いネタを探してこなきゃね。",
+    "audio": "audio/ending_1.wav",
+    "bg_image": "images/bg_ending_neon.jpg",
+    "duration": 4.810666666666667
+  },
+  {
+    "id": 15,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "text": "そうなのだ！というわけで, みんなの感想もコメント欄で待ってるのだ！",
+    "audio": "audio/ending_2.wav",
+    "bg_image": "images/bg_ending_neon.jpg",
+    "duration": 4.586666666666667
+  },
+  {
+    "id": 16,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "text": "チャンネル登録と高評価も, 忘れないでちょうだいね。それじゃあ, またね！",
+    "audio": "audio/ending_3.wav",
+    "bg_image": "images/bg_ending_neon.jpg",
+    "duration": 4.832
   }
 ]

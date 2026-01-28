@@ -26,6 +26,16 @@ export const RemotionVideo: React.FC = () => {
                 height={720}
                 defaultProps={{ isPreview: true }}
             />
+            {/* 本番エクスポート用：フルHD（1080p、30fps） */}
+            <Composition
+                id="VisionForgeLong"
+                component={HelloWorld}
+                durationInFrames={calculateDuration(30) || 300}
+                fps={30}
+                width={1920}
+                height={1080}
+                defaultProps={{ isPreview: false }}
+            />
             <Composition
                 id="ZundamonEmotionTest"
                 component={ZundamonEmotionTest}
