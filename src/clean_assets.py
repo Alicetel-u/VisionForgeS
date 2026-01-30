@@ -21,6 +21,7 @@ PROTECTED_DIRS = [
 PROTECTED_PATTERNS = [
     "images/bg_*.png",
     "images/bg_*.jpg",
+    "images/bg_ending_neon.jpg",
     "images/user_character.png",
     "favicon.ico",
     "logo192.png",

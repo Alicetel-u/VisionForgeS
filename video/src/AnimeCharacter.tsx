@@ -119,6 +119,11 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         actionRotate = Math.sin(frame / 20) * 5;
         actionY = Math.sin(frame / 30) * 10;
         actionX = Math.cos(frame / 40) * 10;
+    } else if (action === 'discovery') {
+        actionY = -Math.abs(Math.sin(frame / 10)) * 40;
+        actionRotate = Math.sin(frame / 5) * 10;
+        actionScaleX = 1.1;
+        actionScaleY = 1.1;
     }
 
     // 登場アニメーション
@@ -171,14 +176,14 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
 
         if (action === 'fall_down') {
             fileName = 'collapsed.png';
-        } else if (emotion === 'panic') {
+        } else if (emotion === 'panic' || emotion === 'surprised') {
             fileName = 'shock.png';
-        } else if (emotion === 'happy' && (action === 'jump' || action === 'big_jump' || action === 'happy_hop')) {
+        } else if (emotion === 'happy' && (action === 'jump' || action === 'big_jump' || action === 'happy_hop' || action === 'discovery')) {
             fileName = 'excited.png';
         } else if (emotion === 'sad') {
             fileName = 'depressed.png';
-        } else if (emotion === 'angry' && action === 'thinking') {
-            fileName = 'mischievous.png';
+        } else if (emotion === 'angry' || action === 'thinking') {
+            fileName = (emotion === 'happy' || action === 'thinking') ? 'mischievous.png' : 'angry.png';
         }
 
         return (
@@ -195,16 +200,32 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
                 {/* 感情アイコン */}
                 <div style={{ position: 'absolute', top: 0, width: '100%', textAlign: 'center', pointerEvents: 'none' }}>
                     {emotion === 'angry' && <div style={{ position: 'absolute', top: 120, right: 30, fontSize: 100, transform: `rotate(${Math.sin(frame / 2) * 10}deg)` }}>💢</div>}
-                    {emotion === 'surprised' && <div style={{ position: 'absolute', top: 50, fontSize: 130 }}>‼️</div>}
-                    {emotion === 'happy' && <div style={{ position: 'absolute', top: 80, right: 30, fontSize: 80 }}>✨</div>}
-                    {emotion === 'sad' && <div style={{ position: 'absolute', top: 220, left: 80, fontSize: 90 }}>💧</div>}
-                    {emotion === 'panic' && <div style={{ position: 'absolute', top: 50, fontSize: 130, transform: `rotate(${frame * 5}deg)` }}>🌀</div>}
-                    {emotion === 'money' && <div style={{ position: 'absolute', top: 100, right: 50, fontSize: 100 }}>🤑</div>}
-                    {emotion === 'broke' && <div style={{ position: 'absolute', top: 250, left: 60, fontSize: 90 }}>💸</div>}
-                    {emotion === 'sleepy' && <div style={{ position: 'absolute', top: 80, left: 40, fontSize: 80 }}>💤</div>}
+                    {emotion === 'surprised' && <div style={{ position: 'absolute', top: 50, fontSize: 130, transform: `scale(${1 + Math.sin(frame / 3) * 0.1})` }}>‼️</div>}
+                    {emotion === 'happy' && (
+                        <>
+                            <div style={{ position: 'absolute', top: 80, right: 30, fontSize: 80, transform: `translateY(${Math.sin(frame / 10) * 20}px)` }}>✨</div>
+                            <div style={{ position: 'absolute', top: 150, left: 30, fontSize: 60, opacity: 0.7, transform: `translateY(${Math.cos(frame / 15) * 30}px)` }}>❤️</div>
+                            <div style={{ position: 'absolute', top: 250, right: 50, fontSize: 50, opacity: 0.6, transform: `translateY(${Math.sin(frame / 12) * 40}px)` }}>🌸</div>
+                        </>
+                    )}
+                    {emotion === 'sad' && <div style={{ position: 'absolute', top: 220, left: 80, fontSize: 90, transform: `translateY(${frame % 30 * 5}px)`, opacity: 1 - (frame % 30 / 30) }}>💧</div>}
+                    {emotion === 'panic' && (
+                        <>
+                            <div style={{ position: 'absolute', top: 50, fontSize: 130, transform: `rotate(${frame * 10}deg)` }}>🌀</div>
+                            <div style={{ position: 'absolute', top: 120, left: 40, fontSize: 80, transform: `translateX(${Math.sin(frame / 2) * 10}px)` }}>💦</div>
+                        </>
+                    )}
+                    {emotion === 'money' && <div style={{ position: 'absolute', top: 100, right: 50, fontSize: 100, transform: `scale(${1 + Math.sin(frame / 5) * 0.2})` }}>🤑</div>}
+                    {emotion === 'broke' && <div style={{ position: 'absolute', top: 250, left: 60, fontSize: 90, transform: `translateY(${frame % 40 * 4}px)`, opacity: 1 - (frame % 40 / 40) }}>💸</div>}
+                    {emotion === 'sleepy' && <div style={{ position: 'absolute', top: 80, left: 40, fontSize: 80, transform: `scale(${0.8 + Math.sin(frame / 20) * 0.2})` }}>💤</div>}
                     {emotion === 'injured' && <div style={{ position: 'absolute', top: 150, right: 20, fontSize: 90 }}>🩹</div>}
-                    {emotion === 'kick' && <div style={{ position: 'absolute', bottom: 150, left: 50, fontSize: 120 }}>💥</div>}
-                    {emotion === 'despair' && <div style={{ position: 'absolute', top: 120, fontSize: 130, filter: 'grayscale(1)', opacity: 0.8 }}>👻</div>}
+                    {emotion === 'kick' && <div style={{ position: 'absolute', bottom: 150, left: 50, fontSize: 120, transform: `scale(${1.5 - (frame % 10 / 10)})` }}>💥</div>}
+                    {emotion === 'despair' && (
+                        <div style={{ position: 'absolute', top: 0, width: '100%', height: '100%' }}>
+                            <div style={{ position: 'absolute', top: 120, left: '50%', transform: 'translateX(-50%)', fontSize: 130, filter: 'grayscale(1)', opacity: 0.8 }}>👻</div>
+                            <div style={{ position: 'absolute', top: 50, width: '100%', height: '100%', background: 'linear-gradient(transparent, rgba(0,0,100,0.2))', pointerEvents: 'none' }} />
+                        </div>
+                    )}
                 </div>
             </div>
         );

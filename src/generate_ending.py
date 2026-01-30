@@ -76,7 +76,7 @@ def create_ending_data():
         data = json.load(f)
 
     last_id = data[-1]["id"] if data else 0
-    bg_image = "images/bg_kanon_room.png"
+    bg_image = "images/bg_ending_neon.jpg"
 
     for i, item in enumerate(script):
         log(f"エンディング音声生成中 ({item['speaker']}): {item['text'][:15]}...")

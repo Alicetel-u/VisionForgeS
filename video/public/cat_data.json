@@ -1,173 +1,410 @@
 [
   {
-    "speaker": "kanon",
-    "emotion": "normal",
-    "action": "none",
-    "title": "異世界∞異世界の衝撃サ終！",
-    "bgm": "bgm/bgm_cute_main.mp3",
-    "text": "衝撃のニュースよ。コロプラの『異世界∞異世界』が、わずか1年ちょっとでサービス終了を発表したわ。",
     "id": 1,
-    "audio": "audio/isekai_0.wav",
-    "duration": 7.498666666666666,
-    "bg_image": "images/isekai_logo.png"
-  },
-  {
-    "speaker": "zundamon",
-    "emotion": "panic",
-    "action": "run_right",
-    "title": "異世界∞異世界の衝撃サ終！",
-    "text": "な、なななな…なんだってー！？ボクがコツコツ貯めた転生石はどうなっちゃうのだー！",
-    "id": 2,
-    "audio": "audio/isekai_1.wav",
-    "duration": 5.685333333333333,
-    "bg_image": "images/isekai_collab_title.png"
-  },
-  {
     "speaker": "kanon",
-    "emotion": "angry",
-    "action": "thinking",
-    "title": "異世界∞異世界の衝撃サ終！",
-    "text": "無に還るわ。正確には2026年4月。リリースからたった1年 3ヶ月の短命だったわね。",
-    "id": 3,
-    "audio": "audio/isekai_2.wav",
-    "duration": 6.368,
-    "bg_image": "images/isekai_collab_2nd_opening.png"
-  },
-  {
-    "speaker": "zundamon",
-    "emotion": "sad",
-    "action": "fall_down",
-    "title": "異世界∞異世界の衝撃サ終！",
-    "text": "早すぎるのだ…！まさに異世界に転生した瞬間にトラックに跳ねられた気分なのだ…",
-    "id": 4,
-    "audio": "audio/isekai_3.wav",
-    "duration": 5.301333333333333,
-    "bg_image": "images/isekai_collab_3rd.png"
-  },
-  {
-    "speaker": "kanon",
-    "emotion": "normal",
-    "action": "nod",
-    "title": "まさかの「暖房器具」扱い！？",
-    "bgm": "bgm/bgm_active_chase.mp3",
-    "text": "評判は散々だったわよ。『長いロード時間』に『コンテンツ不足』、挙句の果てには『スマホの暖房器具』なんて言われてたわ。",
-    "id": 5,
-    "audio": "audio/isekai_4.wav",
-    "duration": 8.629333333333333,
-    "bg_image": "images/isekai_collab_title.png"
-  },
-  {
-    "speaker": "zundamon",
-    "emotion": "angry",
-    "action": "angry_vibe",
-    "title": "まさかの「暖房器具」扱い！？",
-    "text": "暖房器具は失礼なのだ！…いや、確かにボクのスマホもアツアツであのままじゃ爆発するところだったのだ…",
-    "id": 6,
-    "audio": "audio/isekai_5.wav",
-    "duration": 7.072,
-    "bg_image": "images/isekai_collab_battle.jpg"
-  },
-  {
-    "speaker": "kanon",
-    "emotion": "normal",
-    "action": "discovery",
-    "title": "豪華コラボの歴史",
-    "text": "コラボだけは豪華だったんだけどね。無職転生に転スラ、SAO、シャンフロ…まさに異世界勢揃いだったわ。",
-    "id": 7,
-    "audio": "audio/isekai_6.wav",
-    "duration": 7.253333333333333,
-    "bg_image": "images/isekai_collab_1.jpg"
-  },
-  {
-    "speaker": "zundamon",
     "emotion": "happy",
     "action": "happy_hop",
-    "title": "豪華コラボの歴史",
-    "text": "夢の共演だったのだ！それだけで遊ぶ価値があった…と、ボクは信じたいのだ！",
-    "id": 8,
-    "audio": "audio/isekai_7.wav",
-    "duration": 5.632,
-    "bg_image": "images/isekai_collab_2nd.png"
+    "text": "みなさんこんにちは！カノンです！今日は、あの国民的ゲームと住宅情報サイトの『衝撃のコラボ』を紹介します！",
+    "title": "モンハン × SUUMO 衝撃のコラボ！",
+    "audio": "audio/mh_suumo_0.wav",
+    "bg_image": "images/bg_mh_vibe.jpg",
+    "image": "images/bg_mh_vibe.jpg",
+    "duration": 8.225333333333333,
+    "direction": {
+      "mood": "happy",
+      "importance": "climax",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": [
+        "国民的ゲーム",
+        "衝撃のコラボ"
+      ]
+    },
+    "camera": {
+      "preset": "center"
+    }
   },
   {
-    "speaker": "kanon",
-    "emotion": "angry",
-    "action": "thinking",
-    "title": "ゲーム自体が異世界へ…",
-    "bgm": "bgm/bgm_cute_main.mp3",
-    "text": "でも結局、ゲームそのものが異世界（サ終）へ旅立っちゃったわね。皮肉なものだわ。",
-    "id": 9,
-    "audio": "audio/isekai_8.wav",
-    "duration": 5.888,
-    "bg_image": "images/isekai_collab_sword.png"
-  },
-  {
+    "id": 2,
     "speaker": "zundamon",
-    "emotion": "panic",
-    "action": "shiver",
-    "title": "ゲーム自体が異世界へ…",
-    "text": "笑えないのだ！ボクの思い出まで成仏しちゃうのだー！",
-    "id": 10,
-    "audio": "audio/isekai_9.wav",
-    "duration": 3.4346666666666668,
-    "bg_image": "images/isekai_collab_sword.png"
+    "emotion": "happy",
+    "action": "none",
+    "text": "ずんだもんなのだ！住宅情報サイトって…もしかして、あのもふもふした緑のアイツなのだ？",
+    "title": "モンハン × SUUMO 衝撃のコラボ！",
+    "audio": "audio/mh_suumo_1.wav",
+    "bg_image": "images/bg_mh_vibe.jpg",
+    "image": "images/bg_mh_vibe.jpg",
+    "duration": 6.550666666666666,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
   },
   {
+    "id": 3,
     "speaker": "kanon",
     "emotion": "happy",
     "action": "nod",
-    "title": "さよなら異世界∞異世界",
-    "text": "一応、オフライン版が出るらしいから、最後に見届けてあげなさいな。",
-    "id": 11,
-    "audio": "audio/isekai_10.wav",
-    "duration": 4.597333333333333,
-    "bg_image": "images/isekai_collab_3rd.png"
+    "text": "その通り！モンハンとスーモのコラボ広告が、新宿駅などの主要駅ですっごく大きく掲出されているんです！",
+    "title": "主要駅に巨大広告が出現！",
+    "audio": "audio/mh_suumo_2.wav",
+    "bg_image": "images/bg_mh_station.jpg",
+    "image": "images/bg_mh_station.jpg",
+    "duration": 7.137333333333333,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
   },
   {
+    "id": 4,
     "speaker": "zundamon",
-    "emotion": "panic",
-    "action": "spin",
-    "title": "さよなら異世界∞異世界",
-    "text": "助けてなのだー！ボクの財布も異世界転生して二度と帰ってこないのだー！",
+    "emotion": "surprised",
+    "action": "jump",
+    "text": "うわあ、駅の壁一面モンハンなのだ！これなら嫌でも物件探しがはかどるのだ。",
+    "title": "主要駅に巨大広告が出現！",
+    "audio": "audio/mh_suumo_3.wav",
+    "bg_image": "images/bg_mh_station.jpg",
+    "image": "images/bg_mh_station.jpg",
+    "duration": 6.006666666666667,
+    "direction": {
+      "mood": "normal",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
+  },
+  {
+    "id": 5,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "action": "discovery",
+    "text": "こちらは最新作のカギを握る『レ・ダウ』！『どれだけ放電しても大丈夫そうな砂丘』をマップで見つけたみたいですよ。",
+    "title": "【レ・ダウ】放電しても大丈夫な砂丘",
+    "audio": "audio/mh_suumo_4.wav",
+    "bg_image": "images/bg_mh_redau.png",
+    "image": "images/bg_mh_redau.png",
+    "duration": 8.204,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "放電"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
+  },
+  {
+    "id": 6,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "action": "nod",
+    "text": "鳥取砂丘なのだ！スーモの『地図から検索』を使えば、モンスターの縄張りもバッチリ探せるのだ。",
+    "title": "【レ・ダウ】放電しても大丈夫な砂丘",
+    "audio": "audio/mh_suumo_5.wav",
+    "bg_image": "images/bg_mh_redau.png",
+    "image": "images/bg_mh_redau.png",
+    "duration": 7.3933333333333335,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
+  },
+  {
+    "id": 7,
+    "speaker": "kanon",
+    "emotion": "normal",
+    "action": "thinking",
+    "text": "滅尽龍ネルギガンテは『デザイナーズ物件』を希望しています。リフォーム済みでＤＩＹ可、さらに楽器相談可と、意外とこだわり派なんです。",
+    "title": "【ネルギガンテ】楽器可デザイナーズ",
+    "audio": "audio/mh_suumo_6.wav",
+    "bg_image": "images/bg_mh_nergigante.jpg",
+    "image": "images/bg_mh_nergigante.jpg",
+    "duration": 9.441333333333334,
+    "direction": {
+      "mood": "normal",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "デザイナーズ"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
+  },
+  {
+    "id": 8,
+    "speaker": "zundamon",
+    "emotion": "surprised",
+    "action": "shiver",
+    "text": "音楽が趣味なのだ？さては宝玉を隠すために床下収納も欲しがっているのだ？",
+    "title": "【ネルギガンテ】楽器可デザイナーズ",
+    "audio": "audio/mh_suumo_7.wav",
+    "bg_image": "images/bg_mh_nergigante.jpg",
+    "image": "images/bg_mh_nergigante.jpg",
+    "duration": 5.942666666666667,
+    "direction": {
+      "mood": "normal",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
+  },
+  {
+    "id": 9,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "action": "zoom_in",
+    "text": "おなじみのリオレウスは、バルコニー付きで床暖房完備！やっぱり空の王者は日当たりと開放感を重視するんですね。",
+    "title": "【リオレウス】開放的なバルコニー付き",
+    "audio": "audio/mh_suumo_8.wav",
+    "bg_image": "images/bg_mh_rioreus.png",
+    "image": "images/bg_mh_rioreus.png",
+    "duration": 7.34,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "日当たり"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
+  },
+  {
+    "id": 10,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "action": "nod",
+    "text": "即入居可なのがニクイのだ。マイホームに帰ってきた感がすごいのだ。",
+    "title": "【リオレウス】開放的なバルコニー付き",
+    "audio": "audio/mh_suumo_9.wav",
+    "bg_image": "images/bg_mh_rioreus.png",
+    "image": "images/bg_mh_rioreus.png",
+    "duration": 4.737333333333333,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
+  },
+  {
+    "id": 11,
+    "speaker": "kanon",
+    "emotion": "happy",
+    "action": "happy_hop",
+    "text": "ジンオウガはオール電化にこだわっています。これなら自分の電気で節約できそうですよね。",
+    "title": "【ジンオウガ】雷狼竜、夢のオール電化",
+    "audio": "audio/mh_suumo_10.wav",
+    "bg_image": "images/bg_mh_jinouga.png",
+    "image": "images/bg_mh_jinouga.png",
+    "duration": 5.388,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "オール電化"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
+  },
+  {
     "id": 12,
-    "audio": "audio/isekai_11.wav",
-    "duration": 4.778666666666667,
-    "bg_image": "images/isekai_collab_2nd_opening.png"
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "action": "thinking",
+    "text": "ルームシェア可なのも気になるのだ。ケルビと一緒に住むのだ？",
+    "title": "【ジンオウガ】雷狼竜、夢のオール電化",
+    "audio": "audio/mh_suumo_11.wav",
+    "bg_image": "images/bg_mh_jinouga.png",
+    "image": "images/bg_mh_jinouga.png",
+    "duration": 4.108,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
   },
   {
     "id": 13,
-    "speaker": "zundamon",
+    "speaker": "kanon",
     "emotion": "panic",
-    "text": "ふぅ…今回も濃いニュースだったのだ。ボク, もうお腹いっぱいなのだ。",
-    "audio": "audio/ending_0.wav",
-    "bg_image": "images/bg_ending_neon.jpg",
-    "duration": 4.8853333333333335
+    "action": "shiver",
+    "text": "フルフルは角部屋で防音室。大きな声を出すから、ご近所トラブルを避けるためにも防音は必須条件みたいです。",
+    "title": "【フルフル】叫んでも安心！静かな防音室",
+    "audio": "audio/mh_suumo_12.wav",
+    "bg_image": "images/bg_mh_furufuru.png",
+    "image": "images/bg_mh_furufuru.png",
+    "duration": 7.34,
+    "direction": {
+      "mood": "normal",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "防音室"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
   },
   {
     "id": 14,
     "speaker": "kanon",
     "emotion": "happy",
-    "text": "何言ってるの, まだ始まったばかりよ。次も面白いネタを探してこなきゃね。",
-    "audio": "audio/ending_1.wav",
-    "bg_image": "images/bg_ending_neon.jpg",
-    "duration": 4.810666666666667
+    "action": "happy_hop",
+    "text": "アイルーは南向きで追い炊き風呂付き。やっぱり温かいお家が一番なのだにゃー！",
+    "title": "【アイルー】管理人付き・ポカポカ南向き",
+    "audio": "audio/mh_suumo_13.wav",
+    "bg_image": "images/bg_mh_airou.png",
+    "image": "images/bg_mh_airou.png",
+    "duration": 5.025333333333333,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
   },
   {
     "id": 15,
-    "speaker": "zundamon",
-    "emotion": "happy",
-    "text": "そうなのだ！というわけで, みんなの感想もコメント欄で待ってるのだ！",
-    "audio": "audio/ending_2.wav",
-    "bg_image": "images/bg_ending_neon.jpg",
-    "duration": 4.586666666666667
+    "speaker": "kanon",
+    "emotion": "normal",
+    "action": "nod",
+    "text": "ラギアクルスは１階の物件で独立洗面所。水回りの重要性を分かっていますね。",
+    "title": "【ラギアクルス】水回り重視！独立洗面所",
+    "audio": "audio/mh_suumo_14.wav",
+    "bg_image": "images/bg_mh_lagiacrus.jpg",
+    "image": "images/bg_mh_lagiacrus.jpg",
+    "duration": 5.729333333333333,
+    "direction": {
+      "mood": "normal",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "独立洗面所"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
   },
   {
     "id": 16,
     "speaker": "kanon",
     "emotion": "happy",
-    "text": "チャンネル登録と高評価も, 忘れないでちょうだいね。それじゃあ, またね！",
-    "audio": "audio/ending_3.wav",
-    "bg_image": "images/bg_ending_neon.jpg",
-    "duration": 4.832
+    "action": "zoom_in",
+    "text": "『スーモのスタッフに絶対ガチ勢がいる』とネットで言われるほど、生態に合わせた物件選びが秀逸だと話題なんです！",
+    "title": "「スタッフにガチ勢がいる」と話題",
+    "audio": "audio/mh_suumo_15.wav",
+    "bg_image": "images/bg_property.jpg",
+    "image": "images/bg_property.jpg",
+    "duration": 7.478666666666666,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": true
+    },
+    "telop": {
+      "emphasisWords": [
+        "ガチ勢"
+      ]
+    },
+    "camera": {
+      "preset": "zoom_in"
+    }
+  },
+  {
+    "id": 17,
+    "speaker": "zundamon",
+    "emotion": "happy",
+    "action": "happy_hop",
+    "text": "ワイルズ発売前に、ボクも新居を検討するのだ！みんなはどのモンスターのこだわり条件に共感したのだ？",
+    "title": "「スタッフにガチ勢がいる」と話題",
+    "audio": "audio/mh_suumo_16.wav",
+    "bg_image": "images/bg_property.jpg",
+    "image": "images/bg_property.jpg",
+    "duration": 7.564,
+    "direction": {
+      "mood": "happy",
+      "importance": "normal",
+      "isTopicChange": false
+    },
+    "telop": {
+      "emphasisWords": []
+    },
+    "camera": {
+      "preset": "center"
+    }
   }
 ]
