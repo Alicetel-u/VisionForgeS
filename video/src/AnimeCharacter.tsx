@@ -250,11 +250,14 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         const mouthOpen = isSpeaking && Math.floor(frame / 4) % 2 === 0;
         const suffix = mouthOpen ? 'open' : 'close';
 
-        // 基本の感情画像（書き出した5種類 + 追加分）
-        let fileName = `${emotion}_${suffix}.png`;
+        // 利用可能な感情（画像ファイルが存在するもの）
+        const availableEmotions = ['normal', 'happy', 'surprised', 'angry', 'sad', 'panic', 'impressed'];
 
-        // 特殊なエイリアスがあればここで吸収（現在は厳密に一致）
-        // if (emotion === 'surprised') fileName = 'panic.png'; // 新アセットでsurprisedも生成済みのため不要
+        // 存在しない感情はnormalにフォールバック
+        const validEmotion = availableEmotions.includes(emotion) ? emotion : 'normal';
+
+        // 基本の感情画像
+        let fileName = `${validEmotion}_${suffix}.png`;
 
         return (
             <div style={{ ...containerStyle, width: style?.width || 500, height: style?.height || 700, filter: zundaFilter }}>

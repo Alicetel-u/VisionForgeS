@@ -2,8 +2,8 @@ import os
 from psd_tools import PSDImage
 
 def export_lip_sync_expressions():
-    psd_path = r"C:\Users\narak\Downloads\ずんだもん立ち絵素材2.3\ずんだもん立ち絵素材2.3\ずんだもん立ち絵素材2.3.psd"
-    output_dir = r"c:\repos\VisionForge\video\public\images\characters\zundamon"
+    psd_path = r"C:\Users\【RST-9】リバイブ新所沢\Desktop\Antigravity_Projects\VisionForge\assets\source\ずんだもん立ち絵素材2.3\ずんだもん立ち絵素材2.3.psd"
+    output_dir = r"C:\Users\【RST-9】リバイブ新所沢\Desktop\Antigravity_Projects\VisionForge\video\public\images\characters\zundamon"
     
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -38,12 +38,13 @@ def export_lip_sync_expressions():
             curr = curr.parent
             
     # expressions definition
+    # 目は *目セット を使用し、*普通白目 + !黒目 > *普通目 で白目+瞳を表示
     expressions = {
         "normal": {
             "brow": "*普通眉",
             "eye_group": "*目セット",
             "eye_white": "*普通白目",
-            "pupil": "*カメラ目線",
+            "pupil": "*普通目",
             "lip_close": "*んー",
             "lip_open": "*んあー",
             "extras": []
@@ -52,7 +53,7 @@ def export_lip_sync_expressions():
             "brow": "*普通眉",
             "eye_group": "*目セット",
             "eye_white": "*普通白目",
-            "pupil": "*カメラ目線3",
+            "pupil": "*普通目",
             "lip_close": "*むふ",
             "lip_open": "*ほあ",
             "extras": ["*ほっぺ"]
@@ -61,7 +62,7 @@ def export_lip_sync_expressions():
             "brow": "*怒り眉",
             "eye_group": "*目セット",
             "eye_white": "*普通白目",
-            "pupil": "*カメラ目線",
+            "pupil": "*普通目",
             "lip_close": "*むー",
             "lip_open": "*お",
             "extras": []
@@ -70,7 +71,7 @@ def export_lip_sync_expressions():
             "brow": "*困り眉1",
             "eye_group": "*目セット",
             "eye_white": "*普通白目",
-            "pupil": "*目逸らし",
+            "pupil": "*普通目",
             "lip_close": "*むー",
             "lip_open": "*ほー",
             "extras": []
@@ -79,24 +80,25 @@ def export_lip_sync_expressions():
             "brow": "*上がり眉",
             "eye_group": "*目セット",
             "eye_white": "*普通白目",
-            "pupil": "*カメラ目線", 
+            "pupil": "*普通目",
             "lip_close": "*お",
             "lip_open": "*ほあー",
             "extras": []
         },
         "panic": {
             "brow": "*困り眉2",
-            "eye_group": None, 
+            "eye_group": None,
+            "eye_white": None,
             "pupil": None,
-            "lip_close": "*わーい",
+            "lip_close": "*むー",
             "lip_open": "*ほあー",
             "extras": ["汗3", "*ぐるぐる"]
         },
         "impressed": {
-             "brow": "*怒り眉",
+             "brow": "*普通眉",
              "eye_group": "*目セット",
              "eye_white": "*普通白目",
-             "pupil": "*カメラ目線2",
+             "pupil": "*普通目",
              "lip_close": "*むふ",
              "lip_open": "*△",
              "extras": ["*ほっぺ"]
@@ -125,20 +127,22 @@ def export_lip_sync_expressions():
                 
             # 4. 目
             if config.get("eye_group"):
-                # グループ自体を表示
-                for l in find_all_layers(psd, config["eye_group"]): show_recursive(l)
-                
-                # 白目（明示的に指定があれば表示）
-                if config.get("eye_white"):
-                     for l in find_all_layers(psd, config["eye_white"]): show_recursive(l)
+                # 目セットグループを表示
+                for l in find_all_layers(psd, config["eye_group"]):
+                    show_recursive(l)
 
-                # 瞳
+                # 白目を表示
+                if config.get("eye_white"):
+                    for l in find_all_layers(psd, config["eye_white"]):
+                        show_recursive(l)
+
+                # 黒目グループと瞳を表示
+                for l in find_all_layers(psd, "!黒目"):
+                    show_recursive(l)
+
                 if config.get("pupil"):
-                    pupil_name = config["pupil"]
-                    for l in find_all_layers(psd, pupil_name):
-                         # 親が !黒目 であるものを探す（誤爆防止）
-                         if l.parent and l.parent.name == "!黒目":
-                             show_recursive(l)
+                    for l in find_all_layers(psd, config["pupil"]):
+                        show_recursive(l)
             
             # 5. エクストラ
             for ex in config.get("extras", []):
