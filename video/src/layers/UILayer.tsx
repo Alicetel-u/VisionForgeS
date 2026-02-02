@@ -61,6 +61,7 @@ export const UILayer: React.FC<UILayerProps> = ({
                     title={scene.title || 'カノン＆ずんだもん'}
                     sceneFrame={sceneFrame}
                     isPreview={isPreview}
+                    skipEntrance={scene.direction ? !scene.direction.isTopicChange : false}
                 />
             )}
 

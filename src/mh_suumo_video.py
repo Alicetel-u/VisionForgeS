@@ -17,6 +17,20 @@ load_dotenv()
 def log(msg):
     print(msg, flush=True)
 
+def create_silence(output_path, duration_sec=3.0):
+    """無音のwavファイルを生成します。"""
+    try:
+        if os.path.exists(output_path): return
+        with wave.open(output_path, 'w') as f:
+            f.setnchannels(1)
+            f.setsampwidth(2)
+            f.setframerate(44100)
+            n_frames = int(44100 * duration_sec)
+            data = b'\x00\x00' * n_frames
+            f.writeframes(data)
+    except Exception as e:
+        log(f"  [WARNING] Silence creation failed: {e}")
+
 def get_audio_duration(file_path):
     """wavファイルの長さを秒単位で取得します。"""
     try:
@@ -113,7 +127,7 @@ def create_mh_video_data():
         ("", "images/bg_mh_airou.png"),
         ("", "images/bg_mh_lagiacrus.jpg"),
         ("gaming setup monster hunter style", "images/bg_mh_vibe.jpg"),
-        ("modern apartment interior", "images/bg_property.jpg"),
+        ("modern apartment interior", "images/bg_ending_property.jpg"),
     ]
 
     log("\n📸 画像のダウンロード中...")
@@ -155,31 +169,69 @@ def create_mh_video_data():
         ("kanon", "normal", "nod", "images/bg_mh_lagiacrus.jpg", "ラギアクルスは１階の物件で独立洗面所。水回りの重要性を分かっていますね。", "【ラギアクルス】水回り重視！独立洗面所"),
 
         # ネットの評判
-        ("kanon", "happy", "zoom_in", "images/bg_property.jpg", "『スーモのスタッフに絶対ガチ勢がいる』とネットで言われるほど、生態に合わせた物件選びが秀逸だと話題なんです！", "「スタッフにガチ勢がいる」と話題"),
-        ("zundamon", "happy", "happy_hop", "images/bg_property.jpg", "ワイルズ発売前に、ボクも新居を検討するのだ！みんなはどのモンスターのこだわり条件に共感したのだ？", "「スタッフにガチ勢がいる」と話題"),
+        ("kanon", "happy", "zoom_in", "images/bg_ending_property.jpg", "『スーモのスタッフに絶対ガチ勢がいる』とネットで言われるほど、生態に合わせた物件選びが秀逸だと話題なんです！", "「スタッフにガチ勢がいる」と話題"),
+        ("zundamon", "happy", "happy_hop", "images/bg_ending_property.jpg", "ワイルズを遊び尽くすために、ボクも防音室付きの新居を検討するのだ！みんなはどのモンスターのこだわり条件に共感したのだ？", "「スタッフにガチ勢がいる」と話題"),
     ]
 
     video_script = []
     SPEAKER_IDS = {"kanon": 10, "zundamon": 3}
     scene_id = 0
+    audio_index = 0 # 音声ファイル名のインデックス管理用
     last_title = None
+
+    # 無音音声の生成（カットイン用）
+    silence_rel = "audio/silence.wav"
+    silence_full = os.path.join(VIDEO_PUBLIC_DIR, silence_rel)
+    create_silence(silence_full, duration_sec=1.2)
 
     log("\n🎤 音声生成中...")
     for speaker, emotion, action, image, text, title in raw_script:
+        
+        # トピック変更検知（初回含む）
+        is_topic_change = (title != last_title)
+        
+        if is_topic_change:
+            # カットインシーン（会話停止・タイトル強調）
+            # 背景は次のシーンと同じ
+            current_section = "ending" if "bg_ending" in image else "main"
+            
+            video_script.append({
+                "id": scene_id + 1,
+                "speaker": "system", 
+                "emotion": "normal",
+                "action": "none",
+                "text": "", # テキストなし
+                "title": title,
+                "audio": silence_rel,
+                "bg_image": image,
+                "image": image, # 互換性のため
+                "duration": 1.2, # トランジション時間（36フレーム）に合わせる
+                
+                "direction": {
+                    "mood": "normal",
+                    "importance": "climax", # タイトル強調
+                    "isTopicChange": True,  # ここでアニメーション発動
+                    "section": current_section
+                },
+                "telop": { "emphasisWords": [] },
+                "camera": { "preset": "zoom_in" } # タイトルにズーム
+            })
+            scene_id += 1
+            
+        last_title = title
+        
+        # 本編シーン
         log(f"  Scene {scene_id} ({speaker}): {text[:25]}...")
-        audio_rel = f"audio/mh_suumo_{scene_id}.wav"
+        audio_rel = f"audio/mh_suumo_{audio_index}.wav"
         audio_full = os.path.join(VIDEO_PUBLIC_DIR, audio_rel)
         
         speaker_id = SPEAKER_IDS.get(speaker, 10)
         
         # 音声が既に存在する場合は生成をスキップ
         if os.path.exists(audio_full) or generate_voice(text, audio_full, speaker_id=speaker_id):
-            # トピック変更の検知
-            is_topic_change = (title != last_title) and scene_id > 0
-            last_title = title
 
-            # 強調ワードの簡易抽出（本来はLLMで行うが、一旦モック）
-            emphasis_candidates = ["国民的ゲーム", "衝撃のコラボ", "巨大広告", "放電", "デザイナーズ", "オール電化", "防音室", "日当たり", "独立洗面所", "ガチ勢"]
+            # 強調ワードの簡易抽出
+            emphasis_candidates = ["国民的ゲーム", "衝撃のコラボ", "巨大広告", "放電", "デザイナーズ", "オール電化", "防音室", "日当たり", "独立洗面所", "ガチ勢", "ワイルズ"]
             found_words = [w for w in emphasis_candidates if w in text]
 
             # 新しいリッチなデータ構造
@@ -193,25 +245,79 @@ def create_mh_video_data():
                 "audio": audio_rel,
                 "bg_image": image,
                 "image": image,
-                "duration": get_audio_duration(audio_full) + 0.3,
+                "duration": get_audio_duration(audio_full) + 0.5,
                 
                 # Claude Code が要求した拡張フィールド
                 "direction": {
                     "mood": "happy" if emotion == "happy" else "normal",
-                    "importance": "climax" if "衝撃" in text or "！！" in text else "normal",
-                    "isTopicChange": is_topic_change
+                    "importance": "normal",
+                    "isTopicChange": False, # ここではアニメーションさせない（既にカットインで出ている）
+                    "section": "ending" if "bg_ending" in image else "main"
                 },
                 "telop": {
                     "emphasisWords": found_words
                 },
                 "camera": {
-                    "preset": "zoom_in" if is_topic_change or action == "zoom_in" else "center"
+                    "preset": "center" # 会話時はセンターカメラ
                 }
             }
             video_script.append(scene_data)
             scene_id += 1
+            audio_index += 1
         else:
             log(f"    ✗ 音声生成失敗")
+
+    # エンディングパートの追加（generate_ending.pyの内容を統合）
+    log("\n🎬 エンディング生成中...")
+    
+    # エンディング用画像（なければダウンロード）
+    ending_bg_rel = "images/bg_ending_neon.jpg"
+    ending_bg_full = os.path.join(VIDEO_PUBLIC_DIR, ending_bg_rel)
+    if not os.path.exists(ending_bg_full):
+        download_image_pexels("neon city night vibes", ending_bg_full)
+
+    ending_script = [
+        {"speaker": "zundamon", "emotion": "panic", "action": "shiver", "text": "ふぅ…今回も濃いニュースだったのだ。ボク、もうお腹いっぱいなのだ。", "title": "エンディング"},
+        {"speaker": "kanon", "emotion": "happy", "action": "nod", "text": "何言ってるの、まだ始まったばかりよ。次も面白いネタを探してこなきゃね。", "title": "エンディング"},
+        {"speaker": "zundamon", "emotion": "happy", "action": "happy_hop", "text": "そうなのだ！というわけで、みんなの感想もコメント欄で待ってるのだ！", "title": "エンディング"},
+        {"speaker": "kanon", "emotion": "happy", "action": "wave", "text": "チャンネル登録と高評価も、忘れないでちょうだいね。それじゃあ、またね！", "title": "エンディング"},
+    ]
+
+    for i, item in enumerate(ending_script):
+        log(f"  Ending {i} ({item['speaker']}): {item['text'][:15]}...")
+        audio_rel = f"audio/ending_{i}.wav"
+        audio_full = os.path.join(VIDEO_PUBLIC_DIR, audio_rel)
+        
+        speaker_id = SPEAKER_IDS.get(item["speaker"], 10)
+        
+        # 音声生成（存在確認付き）
+        if not os.path.exists(audio_full):
+            generate_voice(item["text"], audio_full, speaker_id=speaker_id)
+            
+        video_script.append({
+            "id": scene_id + 1,
+            "speaker": item["speaker"],
+            "emotion": item["emotion"],
+            "action": item["action"],
+            "text": item["text"],
+            "title": item["title"],
+            "audio": audio_rel,
+            "bg_image": ending_bg_rel, # エンディング専用背景
+            "image": ending_bg_rel,
+            "duration": get_audio_duration(audio_full) + 0.5,
+            
+            # エンディング用の特別演出
+            "direction": {
+                "mood": "happy",
+                "importance": "normal",
+                "isTopicChange": i == 0, # エンディング開始時にトランジション
+                "section": "ending_fixed" # 専用セクション名
+            },
+            "bgm": "bgm/bgm_ending.mp3" if i == 0 else None, # BGM切り替え
+            "telop": { "emphasisWords": [] },
+            "camera": { "preset": "center" }
+        })
+        scene_id += 1
 
     json_path = os.path.join(VIDEO_PUBLIC_DIR, "cat_data.json")
     with open(json_path, 'w', encoding='utf-8') as f:

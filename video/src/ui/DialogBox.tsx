@@ -33,6 +33,11 @@ export const DialogBox: React.FC<DialogBoxProps> = ({
     const { fps } = useVideoConfig();
     const config = SPEAKER_CONFIG[speaker];
 
+    // Configがない、またはテキストが空の場合は表示しない
+    if (!config || !text || text.trim() === '') {
+        return null;
+    }
+
     // テロップ設定をマージ
     const finalEmphasisWords = telop?.emphasisWords || emphasisWords;
     const finalEmphasisColor = telop?.emphasisColor || emphasisColor;

@@ -11,6 +11,9 @@ interface TitleBannerProps {
     title: string;
     sceneFrame: number;
     isPreview: boolean;
+    skipEntrance?: boolean;
+    /** タイトル表示の持続フレーム数（デフォルト: 120フレーム = 4秒） */
+    displayDuration?: number;
 }
 
 /**
@@ -19,16 +22,30 @@ interface TitleBannerProps {
 export const TitleBanner: React.FC<TitleBannerProps> = ({
     title,
     sceneFrame,
-    isPreview
+    isPreview,
+    skipEntrance,
+    displayDuration = 120 // デフォルト4秒（30fps想定）
 }) => {
     const { fps } = useVideoConfig();
 
     // 登場アニメーション（弾むような動き）
-    const entrance = spring({
+    const entrance = skipEntrance ? 1 : spring({
         frame: sceneFrame,
         fps,
         config: { damping: 12, stiffness: 120, mass: 0.8 }
     });
+
+    // フェードアウト開始タイミング（表示時間確保後）
+    const fadeOutStart = displayDuration;
+    const fadeOutDuration = 20; // フェードアウトに20フレーム（約0.67秒）
+
+    // 退場アニメーション（displayDuration後にフェードアウト）
+    const exitProgress = interpolate(
+        sceneFrame,
+        [fadeOutStart, fadeOutStart + fadeOutDuration],
+        [0, 1],
+        { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    );
 
     // 微振動（存在感の演出 - 複数の波を合成）
     const microVibrateY = Math.sin(sceneFrame / 8) * 0.4 + Math.sin(sceneFrame / 13) * 0.2;
@@ -40,7 +57,12 @@ export const TitleBanner: React.FC<TitleBannerProps> = ({
 
     // スライドイン（オーバーシュート付き）
     const slideX = interpolate(entrance, [0, 1], [-120, 0]);
-    const opacity = interpolate(entrance, [0, 0.2, 1], [0, 0.3, 1]);
+    // 退場時はスライドアウト
+    const slideXWithExit = slideX - interpolate(exitProgress, [0, 1], [0, 150]);
+
+    // 登場時のフェードイン + 退場時のフェードアウト
+    const entranceOpacity = interpolate(entrance, [0, 0.2, 1], [0, 0.3, 1]);
+    const opacity = entranceOpacity * (1 - exitProgress);
 
     // 呼吸アニメーション（スケール）
     const breathScale = 1 + Math.sin(sceneFrame / 25) * 0.008;
@@ -62,7 +84,7 @@ export const TitleBanner: React.FC<TitleBannerProps> = ({
             flexDirection: 'column',
             filter: isPreview ? 'none' : `drop-shadow(0 15px 30px rgba(0,0,0,0.5)) drop-shadow(0 5px 15px rgba(255,59,48,${glowIntensity * 0.3}))`,
             opacity,
-            transform: `translateX(${slideX + microVibrateX}px) translateY(${microVibrateY}px) scale(${breathScale})`
+            transform: `translateX(${slideXWithExit + microVibrateX}px) translateY(${microVibrateY}px) scale(${breathScale})`
         }}>
             {/* メインバナー */}
             <div style={{

@@ -224,9 +224,7 @@ const TransitionLayer: React.FC<TransitionLayerProps> = ({
             return (
                 <LogoTransition
                     progress={progress}
-                    logoText={currentScene.title.length > 15
-                        ? currentScene.title.slice(0, 15) + '...'
-                        : currentScene.title}
+                    logoText={currentScene.title}
                     primaryColor="#ff3b30"
                     secondaryColor="#1a1a2e"
                 />

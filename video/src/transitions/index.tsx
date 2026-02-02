@@ -43,7 +43,7 @@ export const DEFAULT_TRANSITION_CONFIG: TransitionConfig = {
 };
 
 /** トランジション実行時間（フレーム） */
-export const TRANSITION_DURATION = 18;
+export const TRANSITION_DURATION = 36; // 1.2秒（タイトルを読める＆音声とのタイミング調整）
 
 // ========================================
 // ワイプトランジション
@@ -157,10 +157,11 @@ export const LogoTransition: React.FC<LogoTransitionProps> = ({
 }) => {
     const { fps } = useVideoConfig();
 
-    // フェーズ分割: 0-0.4 展開、0.4-0.6 ロゴ表示、0.6-1.0 収束
-    const expandProgress = interpolate(progress, [0, 0.4], [0, 1], { extrapolateRight: 'clamp' });
-    const logoProgress = interpolate(progress, [0.3, 0.5, 0.7], [0, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-    const contractProgress = interpolate(progress, [0.6, 1], [0, 1], { extrapolateLeft: 'clamp' });
+    // フェーズ分割: 0-0.15 展開、0.15-0.85 ロゴ表示、0.85-1.0 収束
+    // タイトルを十分読める時間を確保
+    const expandProgress = interpolate(progress, [0, 0.15], [0, 1], { extrapolateRight: 'clamp' });
+    const logoProgress = interpolate(progress, [0.12, 0.2, 0.8, 0.88], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+    const contractProgress = interpolate(progress, [0.85, 1], [0, 1], { extrapolateLeft: 'clamp' });
 
     // 上下からのワイプ
     const topY = interpolate(expandProgress, [0, 1], [-100, 0]);
@@ -171,8 +172,9 @@ export const LogoTransition: React.FC<LogoTransitionProps> = ({
     const exitBottomY = interpolate(contractProgress, [0, 1], [0, 100]);
 
     // ロゴのスケールと透明度
-    const logoScale = interpolate(logoProgress, [0, 0.5, 1], [0.5, 1.1, 0.8]);
-    const logoOpacity = interpolate(logoProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+    // logoProgress は [0→1→1→0] と変化するので、そのまま透明度として使用
+    const logoScale = interpolate(logoProgress, [0, 1], [0.8, 1.05]);
+    const logoOpacity = logoProgress; // 帯が閉まっている間ずっと文字を表示
 
     if (progress <= 0 || progress >= 1) return null;
 
@@ -186,7 +188,7 @@ export const LogoTransition: React.FC<LogoTransitionProps> = ({
                 right: 0,
                 height: '50%',
                 background: `linear-gradient(180deg, ${secondaryColor} 0%, ${secondaryColor}f0 100%)`,
-                transform: `translateY(${progress < 0.6 ? topY : exitTopY}%)`,
+                transform: `translateY(${progress < 0.85 ? topY : exitTopY}%)`,
                 willChange: 'transform'
             }}>
                 {/* アクセントライン */}
@@ -209,7 +211,7 @@ export const LogoTransition: React.FC<LogoTransitionProps> = ({
                 right: 0,
                 height: '50%',
                 background: `linear-gradient(0deg, ${secondaryColor} 0%, ${secondaryColor}f0 100%)`,
-                transform: `translateY(${progress < 0.6 ? bottomY : exitBottomY}%)`,
+                transform: `translateY(${progress < 0.85 ? bottomY : exitBottomY}%)`,
                 willChange: 'transform'
             }}>
                 {/* アクセントライン */}
@@ -233,27 +235,30 @@ export const LogoTransition: React.FC<LogoTransitionProps> = ({
                 justifyContent: 'center',
                 opacity: logoOpacity,
                 transform: `scale(${logoScale})`,
-                willChange: 'transform, opacity'
+                willChange: 'transform, opacity',
+                padding: '0 60px'
             }}>
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 20
+                    gap: 16,
+                    maxWidth: '100%'
                 }}>
                     {/* ロゴアイコン */}
                     <div style={{
-                        width: 80,
-                        height: 80,
+                        width: 56,
+                        height: 56,
+                        minWidth: 56,
                         borderRadius: '50%',
                         background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}cc 100%)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: `0 0 40px ${primaryColor}80`
+                        boxShadow: `0 0 30px ${primaryColor}80`
                     }}>
                         <div style={{
-                            width: 40,
-                            height: 40,
+                            width: 28,
+                            height: 28,
                             borderRadius: '50%',
                             background: 'white',
                             opacity: 0.9
@@ -262,11 +267,13 @@ export const LogoTransition: React.FC<LogoTransitionProps> = ({
 
                     {/* ロゴテキスト */}
                     <div style={{
-                        fontSize: 72,
+                        fontSize: 44,
                         fontWeight: 900,
                         color: 'white',
-                        letterSpacing: '8px',
-                        textShadow: `0 0 30px ${primaryColor}, 0 4px 20px rgba(0,0,0,0.5)`
+                        letterSpacing: '4px',
+                        textShadow: `0 0 20px ${primaryColor}, 0 3px 15px rgba(0,0,0,0.5)`,
+                        textAlign: 'center',
+                        lineHeight: 1.3
                     }}>
                         {logoText}
                     </div>
