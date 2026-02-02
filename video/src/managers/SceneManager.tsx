@@ -94,9 +94,9 @@ export function useSceneManager({
             currentScene = scenes[0];
         }
 
-        // エンディングシーンの判定
+        // エンディングシーンの判定（エンディング固定パートのみ）
         const isEndingScene =
-            currentScene?.bg_image?.includes('ending') ||
+            currentScene?.bg_image?.includes('bg_ending_neon') ||
             (currentScene?.id ?? 0) > 100;
 
         // トランジション状態の計算

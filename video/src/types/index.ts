@@ -214,7 +214,7 @@ export interface SpeakerInfo {
 /** 話者設定マップ */
 export const SPEAKER_CONFIG: Record<Speaker, SpeakerInfo> = {
     kanon: {
-        name: 'かのん',
+        name: 'るしいどさん',
         color: '#00bfff',
         textColor: '#ffffff',
         position: 'left',

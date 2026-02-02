@@ -23,6 +23,7 @@ interface UILayerProps {
     sceneFrame: number;
     isPreview: boolean;
     isEndingScene: boolean;
+    prevTitle?: string;
 }
 
 /**
@@ -32,7 +33,8 @@ export const UILayer: React.FC<UILayerProps> = ({
     scene,
     sceneFrame,
     isPreview,
-    isEndingScene
+    isEndingScene,
+    prevTitle
 }) => {
     const isClimax = scene.direction?.importance === 'climax';
 
@@ -54,16 +56,6 @@ export const UILayer: React.FC<UILayerProps> = ({
                 scene={scene}
                 sceneFrame={sceneFrame}
             />
-
-            {/* タイトルバナー（エンディング以外） */}
-            {!isEndingScene && (
-                <TitleBanner
-                    title={scene.title || 'カノン＆ずんだもん'}
-                    sceneFrame={sceneFrame}
-                    isPreview={isPreview}
-                    skipEntrance={scene.direction ? !scene.direction.isTopicChange : false}
-                />
-            )}
 
             {/* ダイアログボックス */}
             <DialogBox

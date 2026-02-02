@@ -27,6 +27,7 @@ import {
 import { BackgroundLayer } from './layers/BackgroundLayer';
 import { CharacterLayer } from './layers/CharacterLayer';
 import { UILayer } from './layers/UILayer';
+import { TitleBanner } from './ui/TitleBanner';
 
 // トランジション
 import {
@@ -99,6 +100,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                             sceneFrame={sceneFrame}
                             isPreview={isPreview}
                             isEndingScene={isEndingScene}
+                            prevBgImage={prevScene?.bg_image}
                         />
 
                         {/* キャラクターレイヤー */}
@@ -130,6 +132,16 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                             currentSceneIndex={sceneIndex}
                             sceneFrame={sceneFrame}
                         />
+
+                        {/* タイトルバナー（Sequence外でグローバル管理） */}
+                        {!isEndingScene && (
+                            <TitleBanner
+                                title={currentScene.title || 'カノン＆ずんだもん'}
+                                sceneFrame={sceneFrame}
+                                isPreview={isPreview}
+                                skipEntrance={currentScene.title === prevScene?.title}
+                            />
+                        )}
                     </AbsoluteFill>
                 </Sequence>
             </div>
@@ -190,6 +202,7 @@ const UILayerWrapper: React.FC<UILayerWrapperProps> = ({ scene, isPreview, prevS
             sceneFrame={sceneFrame}
             isPreview={isPreview}
             isEndingScene={isEndingScene}
+            prevTitle={prevScene?.title}
         />
     );
 };

@@ -13,6 +13,7 @@ interface BackgroundLayerProps {
     sceneFrame: number;
     isPreview: boolean;
     isEndingScene: boolean;
+    prevBgImage?: string;
 }
 
 /**
@@ -22,7 +23,8 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({
     scene,
     sceneFrame,
     isPreview,
-    isEndingScene
+    isEndingScene,
+    prevBgImage
 }) => {
     const globalFrame = useCurrentFrame();
     const { fps } = useVideoConfig();
@@ -93,6 +95,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({
                     sceneFrame={sceneFrame}
                     isPreview={isPreview}
                     speaker={scene.speaker}
+                    skipEntrance={scene.bg_image === prevBgImage}
                 />
             )}
         </AbsoluteFill>
@@ -107,18 +110,20 @@ interface CenterImageProps {
     sceneFrame: number;
     isPreview: boolean;
     speaker: string;
+    skipEntrance?: boolean;
 }
 
 const CenterImage: React.FC<CenterImageProps> = ({
     imagePath,
     sceneFrame,
     isPreview,
-    speaker
+    speaker,
+    skipEntrance = false
 }) => {
     const { fps } = useVideoConfig();
 
-    // 登場アニメーション
-    const entrance = spring({
+    // 登場アニメーション（同じ画像が続く場合はスキップ）
+    const entrance = skipEntrance ? 1 : spring({
         frame: sceneFrame,
         fps,
         config: { damping: 12, stiffness: 150 }
