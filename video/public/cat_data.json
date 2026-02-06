@@ -1,32 +1,192 @@
 [
   {
     "id": 1,
-    "speaker": "kanon",
-    "text": "ついに明日、2月5日に「ドラクエ7」のリメイクが発売されるよ！",
+    "speaker": "zundamon",
+    "text": "【簡単無限引き直し】\nサクナヒメガチャ",
     "emotion": "normal",
-    "action": "jump",
-    "audio": "audio/t1.wav",
+    "action": "none",
+    "audio": "audio/scene_1.wav",
     "image": null,
-    "duration": 5.94
+    "duration": 4.001333333333333
   },
   {
     "id": 2,
     "speaker": "zundamon",
-    "text": "ドラクエ7！ あのシリーズ屈指の超大作がついに来るのだ！",
+    "text": "リセマラのやり方",
     "emotion": "normal",
-    "action": "shiver",
-    "audio": "audio/t2.wav",
+    "action": "none",
+    "audio": "audio/scene_2.wav",
     "image": null,
-    "duration": 4.89
+    "duration": 1.9853333333333334
   },
   {
     "id": 3,
-    "speaker": "kanon",
-    "text": "PS5とSwitch2の性能をフルに使った、超美麗なグラフィックだよ。",
+    "speaker": "zundamon",
+    "text": "チュートリアルは\nスキップできるので",
     "emotion": "normal",
-    "action": "nod",
-    "audio": "audio/t3.wav",
+    "action": "none",
+    "audio": "audio/scene_3.wav",
     "image": null,
-    "duration": 5.37
+    "duration": 2.9346666666666663
+  },
+  {
+    "id": 4,
+    "speaker": "zundamon",
+    "text": "リセマラに入るまでが\nちょー簡単",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_4.wav",
+    "image": null,
+    "duration": 2.988
+  },
+  {
+    "id": 5,
+    "speaker": "zundamon",
+    "text": "狙うは心想神画と言う名の星3装備",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_5.wav",
+    "image": null,
+    "duration": 3.905333333333333
+  },
+  {
+    "id": 6,
+    "speaker": "zundamon",
+    "text": "すぐに引き直しガチャが引けるので",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_6.wav",
+    "image": null,
+    "duration": 3.0519999999999996
+  },
+  {
+    "id": 7,
+    "speaker": "zundamon",
+    "text": "最低星3を２枚以上\n引くのが目標",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_7.wav",
+    "image": null,
+    "duration": 3.8306666666666667
+  },
+  {
+    "id": 8,
+    "speaker": "zundamon",
+    "text": "その後の配布でガチャで\n１枚以上引いて",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_8.wav",
+    "image": null,
+    "duration": 3.6599999999999997
+  },
+  {
+    "id": 9,
+    "speaker": "zundamon",
+    "text": "合計３枚以上になれば\n終了でよいかな",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_9.wav",
+    "image": null,
+    "duration": 3.969333333333333
+  },
+  {
+    "id": 10,
+    "speaker": "zundamon",
+    "text": "引き直しはちゃんと\n確率通りの",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_10.wav",
+    "image": null,
+    "duration": 3.1159999999999997
+  },
+  {
+    "id": 11,
+    "speaker": "zundamon",
+    "text": "出来レース無しなので",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_11.wav",
+    "image": null,
+    "duration": 2.1133333333333333
+  },
+  {
+    "id": 12,
+    "speaker": "zundamon",
+    "text": "４枚抜きとかもあり得る",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_12.wav",
+    "image": null,
+    "duration": 2.412
+  },
+  {
+    "id": 13,
+    "speaker": "zundamon",
+    "text": "時間が許す限り\nやるが良い",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_13.wav",
+    "image": null,
+    "duration": 2.7746666666666666
+  },
+  {
+    "id": 14,
+    "speaker": "zundamon",
+    "text": "名前は30日\n変えられない",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_14.wav",
+    "image": null,
+    "duration": 2.9026666666666663
+  },
+  {
+    "id": 15,
+    "speaker": "zundamon",
+    "text": "引き直しガチャ\nひたすらやるだけなので",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_15.wav",
+    "image": null,
+    "duration": 3.233333333333333
+  },
+  {
+    "id": 16,
+    "speaker": "zundamon",
+    "text": "スマホ2台で\nリセマラすれば効率よし",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_16.wav",
+    "image": null,
+    "duration": 3.5639999999999996
+  },
+  {
+    "id": 17,
+    "speaker": "zundamon",
+    "text": "IDとパスワードで\n引き継ぎできるので簡単",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_17.wav",
+    "image": null,
+    "duration": 3.969333333333333
+  },
+  {
+    "id": 18,
+    "speaker": "zundamon",
+    "text": "参考になりましたら\nコメントと",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_18.wav",
+    "image": null,
+    "duration": 2.988
+  },
+  {
+    "id": 19,
+    "speaker": "zundamon",
+    "text": "チャンネル登録\n宜しくお願いします",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/scene_19.wav",
+    "image": null,
+    "duration": 3.308
   }
 ]

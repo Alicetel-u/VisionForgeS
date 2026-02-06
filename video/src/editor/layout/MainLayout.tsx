@@ -14,7 +14,8 @@ import styles from './MainLayout.module.css';
 export const MainLayout: React.FC = () => {
     const {
         blocks, addBlock, saveOnly, generateAllAudio, isLoading,
-        selectAll, updateBlock, removeSelected, getSelectedCount
+        selectAll, updateBlock, removeSelected, getSelectedCount,
+        loadScript
     } = useEditorStore();
 
     // ...
@@ -323,6 +324,16 @@ export const MainLayout: React.FC = () => {
                         <span className={styles.version}>v{__APP_VERSION__}</span>
                     </h1>
                     <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            className={styles.saveBtn}
+                            onClick={() => loadScript()}
+                            disabled={isLoading}
+                            style={{ backgroundColor: '#2dd4bf', border: '1px solid #14b8a6', filter: 'hue-rotate(180deg)' }} // Distinct color (orange-ish due to hue rotate or just custom color)
+                            title="サーバー上のファイルを強制的に再読み込みします"
+                        >
+                            <RotateCcw size={16} />
+                            再読込
+                        </button>
                         <button
                             className={styles.saveBtn}
                             onClick={() => saveOnly()}
