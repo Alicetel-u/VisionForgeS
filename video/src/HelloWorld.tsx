@@ -63,8 +63,8 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
     const { currentScene, sceneFrame, isEndingScene, sceneIndex } = state;
 
     // プレビュー解像度(1280x720)を基準としたスケール計算
-    const baseWidth = 1280;
-    const scale = width / baseWidth;
+    const baseWidth = 1080;
+    // const scale = width / baseWidth; // 縦型ではレスポンシブ対応するためスケール固定しない
 
     // トピック変更を検出してロゴトランジションを表示
     const isTopicChange = currentScene ? detectTopicChange(currentScene, prevScene) : false;
@@ -73,17 +73,14 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
         <AbsoluteFill style={{
             backgroundColor: '#050505',
             color: '#fff',
-            fontFamily: 'Inter, "Noto Sans JP", sans-serif'
+            fontFamily: 'Keifont, Inter, "Noto Sans JP", sans-serif'
         }}>
-            {/* スケール適用コンテナ */}
+            {/* メインコンテナ */}
             <div style={{
-                width: baseWidth,
-                height: 720,
-                transform: `scale(${scale})`,
-                transformOrigin: 'top left',
-                position: 'absolute',
-                top: 0,
-                left: 0
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+                overflow: 'hidden'
             }}>
                 {/* BGMシーケンス */}
                 <BGMController
@@ -133,7 +130,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                             sceneFrame={sceneFrame}
                         />
 
-                        {/* タイトルバナー（Sequence外でグローバル管理） */}
+                        {/* タイトルバナー（ユーザー要望により削除）
                         {!isEndingScene && (
                             <TitleBanner
                                 title={currentScene.title || 'カノン＆ずんだもん'}
@@ -142,6 +139,7 @@ export const HelloWorld: React.FC<Props> = ({ isPreview = false }) => {
                                 skipEntrance={currentScene.title === prevScene?.title}
                             />
                         )}
+                        */}
                     </AbsoluteFill>
                 </Sequence>
             </div>
@@ -170,6 +168,7 @@ const BGMController: React.FC<BGMControllerProps> = ({
                     loop
                 />
             </Sequence>
+            {/* エンディングBGM撤廃
             {endingStartFrame > 0 && (
                 <Sequence from={endingStartFrame}>
                     <Audio
@@ -179,6 +178,7 @@ const BGMController: React.FC<BGMControllerProps> = ({
                     />
                 </Sequence>
             )}
+            */}
         </>
     );
 };
@@ -194,7 +194,7 @@ interface UILayerWrapperProps {
 
 const UILayerWrapper: React.FC<UILayerWrapperProps> = ({ scene, isPreview, prevScene }) => {
     const sceneFrame = useCurrentFrame();
-    const isEndingScene = scene.bg_image?.includes('ending') || scene.id > 100;
+    const isEndingScene = false; // エンディング撤廃
 
     return (
         <UILayer

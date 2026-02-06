@@ -31,38 +31,26 @@ export const CharacterLayer: React.FC<CharacterLayerProps> = ({
     return (
         <div style={{
             position: 'absolute',
-            bottom: -30,
+            bottom: -80, // 画面下端からはみ出るくらい
+            left: -80,   // 画面左端からはみ出るくらい（リファレンス画像準拠）
             width: '100%',
-            height: 720 * 0.9,
+            height: '100%',
             display: 'flex',
-            justifyContent: !isEndingScene ? 'space-between' : 'center',
+            justifyContent: 'flex-start',
             alignItems: 'flex-end',
-            padding: !isEndingScene ? '0 10px' : '0',
-            gap: !isEndingScene ? 0 : 100,
             zIndex: 100,
             pointerEvents: 'none',
             ...getShakeStyle(sceneFrame, shakeIntensity)
         }}>
-            {/* カノン（左側） */}
+            {/* シングルキャラクター表示 */}
             <CharacterSlot
-                characterType="kanon"
+                characterType={scene.speaker === 'zundamon' ? 'zundamon' : 'kanon'}
                 currentSpeaker={scene.speaker}
                 scene={scene}
                 sceneFrame={sceneFrame}
                 isPreview={isPreview}
                 isEndingScene={isEndingScene}
-                size={{ width: 460, height: 640 }}
-            />
-
-            {/* ずんだもん（右側） */}
-            <CharacterSlot
-                characterType="zundamon"
-                currentSpeaker={scene.speaker}
-                scene={scene}
-                sceneFrame={sceneFrame}
-                isPreview={isPreview}
-                isEndingScene={isEndingScene}
-                size={{ width: 500, height: 700 }}
+                size={{ width: 850, height: 1150 }} // 存在感のあるサイズに戻す
             />
         </div>
     );
@@ -93,19 +81,21 @@ const CharacterSlot: React.FC<CharacterSlotProps> = ({
     const isSpeaking = currentSpeaker === characterType;
     const isActive = isEndingScene || isSpeaking;
 
-    // 話者かどうかでスタイルを変更
+    // 話者かどうかでスタイルを変更（シングルモードなので常に強調、または話していない時は少し暗くする等）
+    // 今回はシングル表示なので、遷移をスムーズにするために常に表示状態を基本とする
     const containerStyle: React.CSSProperties = {
-        transform: !isEndingScene && isSpeaking
-            ? 'scale(1.05) translateY(0px)'
-            : 'scale(1.0) translateY(10px)',
+        transform: 'scale(1.0)',
+        // 完璧なステッカー風白フチ（4重がけで太くする）
         filter: `
-            drop-shadow(4px 0 0 white)
-            drop-shadow(-4px 0 0 white)
-            drop-shadow(0 4px 0 white)
-            drop-shadow(0 -4px 0 white)
-            ${isActive ? 'brightness(1)' : 'brightness(0.85) grayscale(0.1)'}
+            drop-shadow(0 0 0px white)
+            drop-shadow(3px 3px 0px white)
+            drop-shadow(-3px -3px 0px white)
+            drop-shadow(-3px 3px 0px white)
+            drop-shadow(3px -3px 0px white)
+            drop-shadow(0 5px 15px rgba(0,0,0,0.4))
+            ${isActive ? 'brightness(1.05)' : 'brightness(0.95)'}
         `,
-        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        transition: 'all 0.2s ease-out'
     };
 
     // 表情とアクションの決定

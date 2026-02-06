@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(dir \"C:\\\\Users\\\\【RST-9】リバイブ新所沢\\\\Downloads\" /b)",
+      "Bash(findstr:*)",
+      "Bash(pip install:*)"
     ]
   }
 }

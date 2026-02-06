@@ -70,8 +70,9 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({
                                 ? 'none'
                                 : (isEndingScene
                                     ? 'brightness(0.9)'
-                                    : 'blur(4px) brightness(1.0)'),
-                            opacity: 1.0
+                                    : 'brightness(1.0)'), // メインはクリアに
+                            opacity: 1.0,
+                            transform: 'scale(1.1)' // 少し拡大して余白が出ないように
                         }}
                     />
                 </div>
@@ -88,7 +89,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({
                 }} />
             )}
 
-            {/* 中央画像（ポラロイド風フレーム） */}
+            {/* 中央画像（ポラロイド風フレーム） - 全画面背景スタイルのため一時無効化
             {!isEndingScene && scene.bg_image && scene.bg_image !== 'images/bg_thread.jpg' && (
                 <CenterImage
                     imagePath={scene.bg_image}
@@ -98,6 +99,7 @@ export const BackgroundLayer: React.FC<BackgroundLayerProps> = ({
                     skipEntrance={scene.bg_image === prevBgImage}
                 />
             )}
+            */}
         </AbsoluteFill>
     );
 };
@@ -143,7 +145,7 @@ const CenterImage: React.FC<CenterImageProps> = ({
         <div style={{
             position: 'absolute',
             left: `calc(50% + ${speakerOffsetX}px)`,
-            top: 60 + wobbleY,
+            top: 250 + wobbleY, // 位置を下げてタイトルと被らないように調整（または上げる） -> 字幕が上なので、ここ（250）は丁度よい
             transform: `translateX(-50%) rotate(${-1.5 + wobbleRotation}deg) scale(${entrance})`,
             zIndex: 50,
             filter: isPreview ? 'none' : `drop-shadow(0 ${shadowOffset}px 50px rgba(0,0,0,0.6))`,

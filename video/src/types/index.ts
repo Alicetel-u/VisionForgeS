@@ -313,7 +313,7 @@ export function processThreadItem(
     const telop: TelopSettings = {
         ...DEFAULT_TELOP,
         ...item.telop,
-        emphasisWords: item.telop?.emphasisWords || item.emphasis_words || []
+        emphasisWords: item.telop?.emphasisWords || item.emphasis_words || (item as any).emphasisWords || []
     };
 
     return {

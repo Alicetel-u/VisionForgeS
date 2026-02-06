@@ -59,8 +59,8 @@ export const TitleBanner: React.FC<TitleBannerProps> = ({
     return (
         <div style={{
             position: 'absolute',
-            top: 40,
-            left: 40,
+            bottom: 200, // 下部配置（コメント欄などを避ける位置）
+            left: 20,
             zIndex: 2000,
             display: 'flex',
             flexDirection: 'column',

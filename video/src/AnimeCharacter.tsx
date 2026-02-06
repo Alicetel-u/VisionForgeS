@@ -39,13 +39,22 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
 
     // --- ぬるぬるアニメーション・エンジン (Advanced Action System) ---
 
-    // 1. 基本：呼吸 (Breathing)
-    const breatheY = Math.sin(frame / 20) * 0.01;
-    const breatheX = Math.cos(frame / 25) * 0.005;
+    // 1. 基本：呼吸 (Breathing) - 生きている感を強調
+    // 振幅を大きくし、XとYを逆位相にして「体積の変化」を表現（スクワッシュ＆ストレッチの基本）
+    const breatheY = Math.sin(frame / 30) * 0.025;
+    const breatheX = -Math.sin(frame / 30) * 0.015;
+    const breatheRot = Math.sin(frame / 60) * 1.5; // ゆらゆら揺れる
 
-    // 2. 基本：喋りに合わせた動き
-    const speechJump = isSpeaking ? Math.abs(Math.sin(frame / 5)) * 8 : 0;
-    const speechTilt = isSpeaking ? Math.sin(frame / 10) * 1.2 : 0;
+    // 2. 基本：喋りに合わせた動き (Squash & Stretch Talking)
+    // 単なる上下移動ではなく、伸び縮みを加えることで「弾力」を出す
+    const speechCycle = frame * 0.8; // 喋りのリズム
+    const isTalkFrame = isSpeaking;
+
+    // 喋っているときの跳ねる動き
+    const speechJump = isTalkFrame ? Math.abs(Math.sin(speechCycle)) * 15 : 0;
+    // 喋っているときの伸縮（ジャンプ中に縦に伸び、着地で少し潰れる）
+    const speechScaleY = isTalkFrame ? 1 + Math.sin(speechCycle) * 0.05 : 1;
+    const speechScaleX = isTalkFrame ? 1 - Math.sin(speechCycle) * 0.03 : 1;
 
     // 3. アクション定義
     let actionX = 0;
@@ -57,6 +66,8 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
     let actionOpacity = 1;
 
     // 各種アクションのロジック
+    // ... (既存のアクションロジックはそのまま維持しつつ、補強)
+
     if (action === 'jump') {
         const jumpVal = Math.abs(Math.sin(frame / 8)) * 100;
         actionY = -jumpVal;
@@ -67,23 +78,25 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         actionScaleY = 1.3;
         actionScaleX = 0.8;
     } else if (action === 'nod') {
-        actionRotate = Math.sin(frame / 4) * 8;
-        actionY = Math.abs(Math.sin(frame / 4)) * 10;
+        // 頷きも「お辞儀」のように深く
+        actionRotate = Math.sin(frame / 4) * 12;
+        actionY = Math.abs(Math.sin(frame / 4)) * 20;
     } else if (action === 'shake_head') {
-        actionRotate = Math.sin(frame / 3) * 15;
+        actionRotate = Math.sin(frame / 3) * 20;
     } else if (action === 'shiver') {
-        actionX = (Math.random() - 0.5) * 5;
-        actionY = (Math.random() - 0.5) * 5;
+        actionX = (Math.random() - 0.5) * 10;
+        actionY = (Math.random() - 0.5) * 10;
+        actionScaleX = 0.95 + Math.random() * 0.1; // 震えながら伸縮
     } else if (action === 'run_left') {
         actionX = interpolate(frame % 30, [0, 30], [500, -800]);
-        actionSkew = -10;
-        actionRotate = -5;
-        actionY = -Math.abs(Math.sin(frame / 3)) * 30;
+        actionSkew = -15;
+        actionRotate = -8;
+        actionY = -Math.abs(Math.sin(frame / 3)) * 40;
     } else if (action === 'run_right') {
         actionX = interpolate(frame % 30, [0, 30], [-500, 800]);
-        actionSkew = 10;
-        actionRotate = 5;
-        actionY = -Math.abs(Math.sin(frame / 3)) * 30;
+        actionSkew = 15;
+        actionRotate = 8;
+        actionY = -Math.abs(Math.sin(frame / 3)) * 40;
     } else if (action === 'fly_away') {
         const flyProgress = (frame % 40) / 40;
         actionX = interpolate(flyProgress, [0, 1], [0, 1000]);
@@ -93,53 +106,53 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
         actionScaleY = 1 - flyProgress;
         actionOpacity = 1 - flyProgress;
     } else if (action === 'spin') {
-        actionRotate = frame * 15;
+        actionRotate = frame * 25; // 高速回転
     } else if (action === 'zoom_in') {
-        const zoom = 1 + Math.sin(frame / 10) * 0.2;
+        const zoom = 1 + Math.sin(frame / 10) * 0.3;
         actionScaleX = zoom;
         actionScaleY = zoom;
-        actionY = -100 * (zoom - 1);
-    } else if (action === 'back_off') {
-        actionScaleX = 0.8;
-        actionScaleY = 0.8;
-        actionY = 50;
-        actionSkew = Math.sin(frame / 15) * 5;
+        actionY = -150 * (zoom - 1);
     } else if (action === 'angry_vibe') {
-        actionX = (Math.random() - 0.5) * 15;
-        actionScaleX = 1.1;
-        actionScaleY = 1.1;
+        actionX = (Math.random() - 0.5) * 20;
+        actionScaleX = 1.2;
+        actionScaleY = 1.2;
     } else if (action === 'happy_hop') {
-        actionY = -Math.abs(Math.sin(frame / 5)) * 60;
-        actionRotate = Math.sin(frame / 5) * 5;
+        actionY = -Math.abs(Math.sin(frame / 5)) * 80;
+        actionRotate = Math.sin(frame / 5) * 10;
+        // ホップ中に伸びる
+        actionScaleY = 1 + Math.abs(Math.sin(frame / 5)) * 0.2;
+        actionScaleX = 1 - Math.abs(Math.sin(frame / 5)) * 0.1;
     } else if (action === 'fall_down') {
         actionRotate = 90;
-        actionY = 200;
-        actionX = 50;
+        actionY = 300;
+        actionX = 100;
     } else if (action === 'thinking') {
-        actionRotate = Math.sin(frame / 20) * 5;
-        actionY = Math.sin(frame / 30) * 10;
-        actionX = Math.cos(frame / 40) * 10;
+        actionRotate = Math.sin(frame / 30) * 8;
+        actionY = Math.sin(frame / 40) * 15;
+        actionX = Math.cos(frame / 50) * 15;
     } else if (action === 'discovery') {
-        actionY = -Math.abs(Math.sin(frame / 10)) * 40;
-        actionRotate = Math.sin(frame / 5) * 10;
-        actionScaleX = 1.1;
-        actionScaleY = 1.1;
+        // 発見した瞬間の「ビクッ！」感
+        const shock = Math.max(0, 1 - (frame % 20) / 5);
+        actionY = -shock * 50;
+        actionScaleX = 1 + shock * 0.3;
+        actionScaleY = 1 - shock * 0.2;
     }
 
     // 登場アニメーション
     const entrance = spring({
         frame,
         fps,
-        config: { damping: 14, stiffness: 120 },
+        config: { damping: 12, stiffness: 180 }, // より弾むように設定
     });
 
     // 最終的なトランスフォーム計算
+    // 呼吸 + 喋り伸縮 + アクション伸縮 を全て掛け合わせる
     const finalTransform = `
         translate(${actionX}px, ${actionY - speechJump}px)
-        rotate(${actionRotate}deg)
+        rotate(${actionRotate + breatheRot}deg)
         skewX(${actionSkew}deg)
-        scaleX(${(1 + breatheX) * actionScaleX})
-        scaleY(${(1 + breatheY) * actionScaleY})
+        scaleX(${(1 + breatheX) * speechScaleX * actionScaleX})
+        scaleY(${(1 + breatheY) * speechScaleY * actionScaleY})
     `;
 
     // --- 各キャラクターのレンダリング部 ---
@@ -178,8 +191,10 @@ export const AnimeCharacter: React.FC<Props> = ({ type, emotion, action = 'none'
             fileName = 'collapsed.png';
         } else if (emotion === 'panic' || emotion === 'surprised') {
             fileName = 'shock.png';
-        } else if (emotion === 'happy' && (action === 'jump' || action === 'big_jump' || action === 'happy_hop' || action === 'discovery')) {
+        } else if ((emotion === 'happy' || emotion === 'impressed') && (action === 'jump' || action === 'big_jump' || action === 'happy_hop' || action === 'discovery')) {
             fileName = 'excited.png';
+        } else if (emotion === 'impressed') {
+            fileName = 'happy.png'; // または専用の画像があればそれに
         } else if (emotion === 'sad') {
             fileName = 'depressed.png';
         } else if (emotion === 'angry' || action === 'thinking') {

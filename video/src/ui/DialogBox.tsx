@@ -63,107 +63,61 @@ export const DialogBox: React.FC<DialogBoxProps> = ({
         isPreview
     );
 
+    // 文字数に応じてフォントサイズを調整（3行以内に収めるため）
+    const getFontSize = (length: number) => {
+        if (length < 15) return 72; // 短い文は超巨大
+        if (length < 25) return 60; // 普通の文
+        if (length < 40) return 48; // 長文
+        return 38; // かなり長文
+    };
+
+    const dynamicFontSize = getFontSize(text.length);
+
     return (
         <div style={{
             position: 'absolute',
-            bottom: 25,
+            top: 50, // 画面最上部ギリギリ
             width: '100%',
             display: 'flex',
             justifyContent: 'center',
             zIndex: 1500,
             pointerEvents: 'none'
         }}>
-            {/* グラデーション背景（下部フェード） */}
-            <div style={{
-                position: 'absolute',
-                bottom: -25,
-                width: '100%',
-                height: 280,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)',
-                zIndex: -1,
-                pointerEvents: 'none'
-            }} />
-
-            {/* メインボックス */}
+            {/* 赤座布団（バナースタイル） */}
             <div style={{
                 position: 'relative',
-                width: '88%',
-                minHeight: 145,
-                transform: `scale(${entrance}) translateY(${(1 - entrance) * 30}px)`,
-                opacity: entrance
+                width: '95%', // 画面幅いっぱい
+                backgroundColor: '#ee3322', // 朱色に近い赤
+                padding: '15px 10px',
+                borderRadius: 16,
+                boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'column'
             }}>
-                {/* 背景プレート */}
                 <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(250,250,255,0.98) 100%)',
-                    borderRadius: 20,
-                    border: `5px solid ${config.color}`,
-                    boxShadow: isPreview ? 'none' : `
-                        0 10px 40px rgba(0,0,0,0.25),
-                        0 0 0 1px rgba(255,255,255,0.1),
-                        inset 0 1px 0 rgba(255,255,255,0.5),
-                        inset 0 -2px 10px rgba(0,0,0,0.03)
-                    `
-                }} />
-
-                {/* 話者タグ（上部に配置） */}
-                <div style={{
-                    position: 'absolute',
-                    top: -18,
-                    left: 30,
-                    zIndex: 10
+                    fontSize: dynamicFontSize, // 動的サイズ
+                    fontFamily: 'Keifont',
+                    fontWeight: 900, // 極太
+                    color: '#ffffff',
+                    textAlign: 'center',
+                    lineHeight: 1.15,
+                    letterSpacing: '0px',
+                    wordBreak: 'break-word',
+                    textShadow: `
+                        4px 4px 0 #000,
+                        -4px -4px 0 #000,
+                        -4px 4px 0 #000,
+                        4px -4px 0 #000,
+                        4px 0 0 #000,
+                        -4px 0 0 #000,
+                        0 4px 0 #000,
+                        0 -4px 0 #000,
+                        6px 6px 0 rgba(0,0,0,0.2)
+                    ` // 以前よりさらに太い縁取り
                 }}>
-                    <SpeakerTag speaker={speaker} sceneFrame={sceneFrame} isPreview={isPreview} />
-                </div>
-
-                {/* テキストコンテナ */}
-                <div style={{
-                    position: 'relative',
-                    padding: '28px 45px 22px 45px',
-                    zIndex: 1
-                }}>
-                    <div style={{
-                        fontSize: 38,
-                        fontWeight: 800,
-                        color: '#1a1a1a',
-                        textAlign: 'left',
-                        lineHeight: 1.35,
-                        letterSpacing: '-0.3px',
-                        wordBreak: 'break-word'
-                    }}>
-                        {processedText}
-                    </div>
-                </div>
-
-                {/* 装飾コーナー（右下） */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    right: 20,
-                    width: 30,
-                    height: 3,
-                    background: `linear-gradient(90deg, transparent, ${config.color})`,
-                    borderRadius: 2
-                }} />
-
-                {/* 左下の装飾 */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    left: 20,
-                    display: 'flex',
-                    gap: 4
-                }}>
-                    {[0, 1, 2].map(i => (
-                        <div key={i} style={{
-                            width: 4,
-                            height: 4,
-                            borderRadius: '50%',
-                            background: config.color,
-                            opacity: 0.3 + (i * 0.2)
-                        }} />
-                    ))}
+                    {processedText}
                 </div>
             </div>
         </div>
@@ -273,33 +227,22 @@ const EmphasisWord: React.FC<EmphasisWordProps> = ({
     return (
         <span style={{
             display: 'inline-block',
-            color: color,
+            color: '#ffff00', // 強烈な黄色
             fontWeight: 900,
-            transform: `scale(${entranceScale * pulse}) translate(${shake}px, 0)`,
-            textShadow: isPreview ? 'none' : `
-                0 0 ${25 * glowIntensity}px ${color}A0,
-                0 0 ${50 * glowIntensity}px ${color}50,
-                0 2px 4px rgba(0,0,0,0.3)
-            `,
+            transform: `scale(${entranceScale * pulse * 1.2}) translate(${shake}px, 0)`, // 少し大きく
+            textShadow: `
+                2px 2px 0 #000,
+                -2px -2px 0 #000,
+                -2px 2px 0 #000,
+                2px -2px 0 #000,
+                0 0 10px rgba(255, 255, 0, 0.8)
+            `, // 黒縁取り＋発光
             position: 'relative',
             padding: '0 4px',
-            marginLeft: 2,
-            marginRight: 2,
-            background: `linear-gradient(to top, ${color}20, transparent)`,
-            borderRadius: 4
+            marginLeft: 4,
+            marginRight: 4,
+            zIndex: 10 // 通常文字より手前に
         }}>
-            {/* アンダーライン（輝く演出） */}
-            <span style={{
-                position: 'absolute',
-                bottom: -2,
-                left: 0,
-                right: 0,
-                height: 4,
-                background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-                borderRadius: 2,
-                boxShadow: `0 0 10px ${color}`,
-                opacity: interpolate(adjustedFrame, [0, 10, 40], [0, 1, 0.6], { extrapolateRight: 'clamp' })
-            }} />
             {word}
         </span>
     );
