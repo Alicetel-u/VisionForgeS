@@ -1,18 +1,54 @@
+// Individual image layer with its own transform
+export interface ImageLayer {
+    id: string;
+    src: string;
+    x: number;
+    y: number;
+    scale: number;
+    rotation: number;
+}
+
+export const MAX_IMAGES_PER_BLOCK = 2;
+
 export interface EditorBlock {
     id: string;
     text: string;
     speaker: string;
     durationInSeconds: number;
+    // Legacy single image support (for backward compatibility)
     image?: string;
     imageX?: number;
     imageY?: number;
     imageScale?: number;
     imageRotation?: number;
+    // Multiple images support
+    images?: ImageLayer[];
+    selectedImageId?: string; // Currently selected image for editing
     audio?: string;
     isSelected?: boolean;
     // Word tokens for display (generated from text)
     tokens?: string[];
 }
+
+// Helper to get all images from a block (handles both legacy and new format)
+export const getBlockImages = (block: EditorBlock): ImageLayer[] => {
+    // If images array exists, use it
+    if (block.images && block.images.length > 0) {
+        return block.images;
+    }
+    // Legacy: convert single image to array format
+    if (block.image) {
+        return [{
+            id: 'legacy-image',
+            src: block.image,
+            x: block.imageX || 0,
+            y: block.imageY || 0,
+            scale: block.imageScale || 1,
+            rotation: block.imageRotation || 0,
+        }];
+    }
+    return [];
+};
 
 export interface VideoConfig {
     fps: number;

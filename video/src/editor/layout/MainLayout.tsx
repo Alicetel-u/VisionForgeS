@@ -3,19 +3,20 @@ import { Player, PlayerRef } from '@remotion/player';
 import {
     Plus, Play, Pause, Grid3X3, MoreHorizontal,
     Save, Trash2, CheckSquare, Square, RotateCcw,
-    AudioLines
+    AudioLines, Merge
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import { CaptionBlock } from '../components/CaptionBlock';
 import { PreviewTransformOverlay } from '../components/PreviewTransformOverlay';
 import { EditorPreview } from '../../remotion/compositions/EditorPreview';
+import { ImageLayer, getBlockImages } from '../types';
 import styles from './MainLayout.module.css';
 
 export const MainLayout: React.FC = () => {
     const {
         blocks, addBlock, saveOnly, generateAllAudio, isLoading,
         selectAll, updateBlock, removeSelected, getSelectedCount,
-        loadScript
+        loadScript, canMergeSelected, mergeSelected, generateAudioForSelected
     } = useEditorStore();
 
     // ...
@@ -62,10 +63,32 @@ export const MainLayout: React.FC = () => {
         };
     }, []);
 
-    // Handle transform updates for active block
-    const handleTransformUpdate = useCallback((updates: { imageX?: number; imageY?: number; imageScale?: number; imageRotation?: number }) => {
+    // Handle image updates for multi-image support
+    const handleUpdateImage = useCallback((imageId: string, updates: Partial<ImageLayer>) => {
+        if (!activeBlock) return;
+
+        const currentImages = getBlockImages(activeBlock);
+        const updatedImages = currentImages.map(img =>
+            img.id === imageId ? { ...img, ...updates } : img
+        );
+
+        // Also update legacy fields if it's the legacy image
+        if (imageId === 'legacy-image') {
+            updateBlock(activeBlock.id, {
+                imageX: updates.x ?? activeBlock.imageX,
+                imageY: updates.y ?? activeBlock.imageY,
+                imageScale: updates.scale ?? activeBlock.imageScale,
+                imageRotation: updates.rotation ?? activeBlock.imageRotation,
+            });
+        } else {
+            updateBlock(activeBlock.id, { images: updatedImages });
+        }
+    }, [activeBlock, updateBlock]);
+
+    // Handle image selection
+    const handleSelectImage = useCallback((imageId: string | undefined) => {
         if (activeBlock) {
-            updateBlock(activeBlock.id, updates);
+            updateBlock(activeBlock.id, { selectedImageId: imageId });
         }
     }, [activeBlock, updateBlock]);
 
@@ -249,15 +272,14 @@ export const MainLayout: React.FC = () => {
                         }}
                     />
 
-                    {/* Transform Overlay */}
-                    {activeBlock?.image && (
-                        <PreviewTransformOverlay
-                            block={activeBlock}
-                            onUpdate={handleTransformUpdate}
-                            containerWidth={videoContainerSize.width}
-                            containerHeight={videoContainerSize.height}
-                        />
-                    )}
+                    {/* Transform Overlay for multi-image support */}
+                    <PreviewTransformOverlay
+                        block={activeBlock}
+                        onUpdateImage={handleUpdateImage}
+                        onSelectImage={handleSelectImage}
+                        containerWidth={videoContainerSize.width}
+                        containerHeight={videoContainerSize.height}
+                    />
                 </div>
 
                 {/* Fixed Controls Bar - below video */}
@@ -377,6 +399,25 @@ export const MainLayout: React.FC = () => {
                             <span className={styles.selectionCount}>
                                 {selectedCount}件選択中
                             </span>
+                            <button
+                                className={styles.toolbarBtnAudio}
+                                onClick={() => generateAudioForSelected()}
+                                disabled={isLoading}
+                                title="選択したクリップの音声を生成"
+                            >
+                                <AudioLines size={16} />
+                                <span>音声生成</span>
+                            </button>
+                            {canMergeSelected() && (
+                                <button
+                                    className={styles.toolbarBtn}
+                                    onClick={() => mergeSelected()}
+                                    title="選択した隣接クリップを結合"
+                                >
+                                    <Merge size={16} />
+                                    <span>結合</span>
+                                </button>
+                            )}
                             <button
                                 className={styles.toolbarBtnDanger}
                                 onClick={() => removeSelected()}

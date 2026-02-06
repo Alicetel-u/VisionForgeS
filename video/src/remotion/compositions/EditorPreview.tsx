@@ -1,17 +1,49 @@
 import React, { useMemo } from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile, Audio, useCurrentFrame, interpolate, spring } from 'remotion';
-import { EditorBlock } from '../../editor/types';
+import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile, Audio, useCurrentFrame, interpolate } from 'remotion';
+import { EditorBlock, ImageLayer, getBlockImages } from '../../editor/types';
 
 interface Props {
     blocks: EditorBlock[];
 }
 
+// Helper to get valid image source
+const getImageSrc = (src: string | undefined): string | null => {
+    if (!src) return null;
+    if (src.startsWith('indexeddb:')) return null;
+    if (src.startsWith('http') || src.startsWith('blob:') || src.startsWith('data:')) {
+        return src;
+    }
+    return staticFile(src);
+};
+
+// Single image layer component
+const ImageLayerComponent: React.FC<{ layer: ImageLayer; kenBurnsScale: number }> = ({ layer, kenBurnsScale }) => {
+    const imageSrc = getImageSrc(layer.src);
+    if (!imageSrc) return null;
+
+    const finalScale = layer.scale * kenBurnsScale;
+
+    return (
+        <AbsoluteFill style={{ pointerEvents: 'none' }}>
+            <Img
+                src={imageSrc}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    transform: `translate(${layer.x}px, ${layer.y}px) scale(${finalScale}) rotate(${layer.rotation}deg)`,
+                    transformOrigin: 'center center'
+                }}
+            />
+        </AbsoluteFill>
+    );
+};
+
 const PreviewBlock: React.FC<{ block: EditorBlock }> = ({ block }) => {
     const frame = useCurrentFrame();
-    const { fps, durationInFrames } = useVideoConfig();
+    const { durationInFrames } = useVideoConfig();
 
     // Image Animation: Slow Zoom (Ken Burns)
-    // Scale up slightly over the duration of the clip
     const kenBurnsScale = interpolate(
         frame,
         [0, durationInFrames],
@@ -19,45 +51,26 @@ const PreviewBlock: React.FC<{ block: EditorBlock }> = ({ block }) => {
         { extrapolateRight: 'clamp' }
     );
 
-    // Combine manual scale with Ken Burns
-    const finalImageScale = (block.imageScale || 1) * kenBurnsScale;
-
-    // Helper for image source
-    const getImageSrc = () => {
-        if (!block.image) return null;
-        if (block.image.startsWith('indexeddb:')) return null;
-        if (block.image.startsWith('http') || block.image.startsWith('blob:') || block.image.startsWith('data:')) {
-            return block.image;
-        }
-        return staticFile(block.image);
-    };
-
-    const imageSrc = getImageSrc();
+    // Get all images (handles both legacy and new format)
+    const images = getBlockImages(block);
+    const hasImages = images.length > 0;
 
     return (
         <AbsoluteFill>
             {block.audio && <Audio src={staticFile(block.audio)} />}
 
             <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-                {/* Background Image if exists */}
-                {imageSrc && (
-                    <AbsoluteFill>
-                        <Img
-                            src={imageSrc}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                // Apply user transform + Ken Burns scale
-                                transform: `translate(${block.imageX || 0}px, ${block.imageY || 0}px) scale(${finalImageScale}) rotate(${block.imageRotation || 0}deg)`,
-                                transformOrigin: 'center center'
-                            }}
-                        />
-                    </AbsoluteFill>
-                )}
+                {/* Render all images */}
+                {images.map((layer, index) => (
+                    <ImageLayerComponent
+                        key={layer.id}
+                        layer={layer}
+                        kenBurnsScale={kenBurnsScale}
+                    />
+                ))}
 
-                {/* Character Image Placeholder (Overlay) */}
-                {!imageSrc && (
+                {/* Character Image Placeholder (when no images) */}
+                {!hasImages && (
                     <div style={{
                         position: 'absolute',
                         bottom: 0,

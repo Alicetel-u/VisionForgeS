@@ -174,6 +174,13 @@
     gap: 10px;
 }
 
+/* Thumbnail Container for multiple images */
+.thumbnailContainer {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
 /* Thumbnail */
 .thumbnail {
     width: 40px;
@@ -189,10 +196,46 @@
     cursor: pointer;
     border: 1px solid #333;
     transition: all 0.15s;
+    position: relative;
 }
 
 .thumbnail:hover {
     border-color: #00bcd4;
+}
+
+.thumbnailAdd {
+    border-style: dashed;
+}
+
+.thumbnailAdd:hover {
+    background-color: #252525;
+}
+
+.thumbnailRemove {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ff4d4d;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+    padding: 0;
+}
+
+.thumbnail:hover .thumbnailRemove {
+    opacity: 1;
+}
+
+.thumbnailRemove:hover {
+    background: #ff3333;
 }
 
 .hiddenInput {

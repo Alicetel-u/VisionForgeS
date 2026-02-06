@@ -10,7 +10,8 @@
       "Bash(npx tsc:*)",
       "Bash(timeout 10 npm run dev:*)",
       "Bash(npm run:*)",
-      "Bash(pushd:*)"
+      "Bash(pushd:*)",
+      "Bash(C:/repos/VisionForgeS/video/node_modules/.bin/tsc:*)"
     ]
   }
 }

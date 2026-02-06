@@ -23,9 +23,13 @@ interface EditorState {
     toggleSelection: (id: string) => void;
     selectAll: (select: boolean) => void;
     getSelectedCount: () => number;
+    canMergeSelected: () => boolean;
+    mergeSelected: () => void;
     loadScript: () => Promise<void>;
     saveOnly: () => Promise<void>;
     generateAllAudio: () => Promise<void>;
+    generateAudioForBlock: (id: string) => Promise<void>;
+    generateAudioForSelected: () => Promise<void>;
     loadImagesFromStorage: () => Promise<void>;
 }
 
@@ -140,6 +144,62 @@ export const useEditorStore = create<EditorState>()(
                     return get().blocks.filter(b => b.isSelected).length;
                 },
 
+                canMergeSelected: () => {
+                    const { blocks } = get();
+                    const selectedIndices = blocks
+                        .map((b, i) => b.isSelected ? i : -1)
+                        .filter(i => i !== -1);
+
+                    // Need at least 2 selected
+                    if (selectedIndices.length < 2) return false;
+
+                    // Check if all selected are adjacent (consecutive indices)
+                    for (let i = 1; i < selectedIndices.length; i++) {
+                        if (selectedIndices[i] !== selectedIndices[i - 1] + 1) {
+                            return false;
+                        }
+                    }
+                    return true;
+                },
+
+                mergeSelected: () => {
+                    const { blocks } = get();
+                    const selectedIndices = blocks
+                        .map((b, i) => b.isSelected ? i : -1)
+                        .filter(i => i !== -1);
+
+                    // Validate adjacency
+                    if (selectedIndices.length < 2) return;
+                    for (let i = 1; i < selectedIndices.length; i++) {
+                        if (selectedIndices[i] !== selectedIndices[i - 1] + 1) {
+                            return;
+                        }
+                    }
+
+                    // Get selected blocks in order
+                    const selectedBlocks = selectedIndices.map(i => blocks[i]);
+
+                    // Merge into the first block
+                    const firstBlock = selectedBlocks[0];
+                    const mergedText = selectedBlocks.map(b => b.text).join('');
+                    const mergedDuration = selectedBlocks.reduce((acc, b) => acc + b.durationInSeconds, 0);
+
+                    // Use the first block's speaker and image
+                    const mergedBlock: EditorBlock = {
+                        ...firstBlock,
+                        text: mergedText,
+                        durationInSeconds: mergedDuration,
+                        audio: undefined, // Clear audio - needs regeneration
+                        isSelected: false,
+                    };
+
+                    // Create new blocks array
+                    const newBlocks = blocks.filter((_, i) => !selectedIndices.includes(i));
+                    newBlocks.splice(selectedIndices[0], 0, mergedBlock);
+
+                    set({ blocks: newBlocks });
+                },
+
                 loadScript: async () => {
                     set({ isLoading: true });
                     try {
@@ -176,6 +236,44 @@ export const useEditorStore = create<EditorState>()(
                     try {
                         const { blocks } = get();
                         await saveScript(blocks, true);
+                        const updatedBlocks = await fetchScript();
+                        set({ blocks: updatedBlocks });
+                    } catch (e) {
+                        console.error(e);
+                        alert("音声生成に失敗しました。");
+                    } finally {
+                        set({ isLoading: false });
+                    }
+                },
+
+                generateAudioForBlock: async (id: string) => {
+                    set({ isLoading: true });
+                    try {
+                        const { blocks } = get();
+                        // Clear audio for the target block to force regeneration
+                        const blocksToSave = blocks.map(b =>
+                            b.id === id ? { ...b, audio: undefined } : b
+                        );
+                        await saveScript(blocksToSave, true);
+                        const updatedBlocks = await fetchScript();
+                        set({ blocks: updatedBlocks });
+                    } catch (e) {
+                        console.error(e);
+                        alert("音声生成に失敗しました。");
+                    } finally {
+                        set({ isLoading: false });
+                    }
+                },
+
+                generateAudioForSelected: async () => {
+                    set({ isLoading: true });
+                    try {
+                        const { blocks } = get();
+                        // Clear audio for selected blocks to force regeneration
+                        const blocksToSave = blocks.map(b =>
+                            b.isSelected ? { ...b, audio: undefined } : b
+                        );
+                        await saveScript(blocksToSave, true);
                         const updatedBlocks = await fetchScript();
                         set({ blocks: updatedBlocks });
                     } catch (e) {

@@ -2,22 +2,12 @@
   {
     "id": 1,
     "speaker": "zundamon",
-    "text": "【簡単無限引き直し】\nサクナヒメガチャ",
+    "text": "【簡単無限引き直し】\nサクナヒメガチャリセマラのやり方",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_1.wav",
+    "audio": "audio/9a035a6d-2fba-4ae5-827a-1e7adae51371.wav",
     "image": null,
-    "duration": 4.001333333333333
-  },
-  {
-    "id": 2,
-    "speaker": "zundamon",
-    "text": "リセマラのやり方",
-    "emotion": "normal",
-    "action": "none",
-    "audio": "audio/scene_2.wav",
-    "image": null,
-    "duration": 1.9853333333333334
+    "duration": 5.281333333333333
   },
   {
     "id": 3,

@@ -3,7 +3,7 @@ import {
     Trash2, Play, Edit3, Link2, MoreHorizontal,
     User, Image as ImageIcon, MessageSquare, Copy, Clock
 } from 'lucide-react';
-import { EditorBlock, getSpeakerConfig, SPEAKERS } from '../types';
+import { EditorBlock, getSpeakerConfig, SPEAKERS, getBlockImages, ImageLayer, MAX_IMAGES_PER_BLOCK } from '../types';
 import { useEditorStore } from '../store/editorStore';
 import { uploadImageAsBase64 } from '../api';
 import styles from './CaptionBlock.module.css';
@@ -74,6 +74,69 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
     const speakerConfig = getSpeakerConfig(block.speaker);
     const tokens = useMemo(() => tokenizeText(block.text), [block.text]);
 
+    // Get current images (handles legacy format)
+    const currentImages = useMemo(() => getBlockImages(block), [block]);
+    const canAddImage = currentImages.length < MAX_IMAGES_PER_BLOCK;
+
+    // Add new image to the block
+    const addImageToBlock = async (url: string) => {
+        const newImage: ImageLayer = {
+            id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            src: url,
+            x: 0,
+            y: 0,
+            scale: 1,
+            rotation: 0,
+        };
+
+        // If this is the first image and we have legacy format, update to new format
+        if (currentImages.length === 0) {
+            updateBlock(block.id, {
+                images: [newImage],
+                image: undefined, // Clear legacy field
+                imageX: undefined,
+                imageY: undefined,
+                imageScale: undefined,
+                imageRotation: undefined,
+            });
+        } else if (currentImages.length < MAX_IMAGES_PER_BLOCK) {
+            // Convert legacy to new format if needed, then add
+            const existingImages = currentImages.map(img => ({
+                id: img.id === 'legacy-image' ? `img-${Date.now()}-legacy` : img.id,
+                src: img.src,
+                x: img.x,
+                y: img.y,
+                scale: img.scale,
+                rotation: img.rotation,
+            }));
+            updateBlock(block.id, {
+                images: [...existingImages, newImage],
+                image: undefined,
+                imageX: undefined,
+                imageY: undefined,
+                imageScale: undefined,
+                imageRotation: undefined,
+            });
+        }
+    };
+
+    // Remove image from block
+    const removeImageFromBlock = (imageId: string) => {
+        const updatedImages = currentImages.filter(img => img.id !== imageId);
+        if (imageId === 'legacy-image') {
+            updateBlock(block.id, {
+                image: undefined,
+                imageX: undefined,
+                imageY: undefined,
+                imageScale: undefined,
+                imageRotation: undefined,
+                images: updatedImages.length > 0 ? updatedImages : undefined,
+            });
+        } else {
+            updateBlock(block.id, { images: updatedImages.length > 0 ? updatedImages : undefined });
+        }
+    };
+
     // Toggle selection (for multi-select with Ctrl/Cmd)
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -88,18 +151,23 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
+        if (file && canAddImage) {
             try {
                 const url = await uploadImageAsBase64(file);
-                updateBlock(block.id, { image: url });
+                addImageToBlock(url);
             } catch (error) {
                 console.error("Image upload failed", error);
             }
+        }
+        // Reset input so the same file can be selected again
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
     // Handle paste events
     const handlePaste = async (e: React.ClipboardEvent) => {
+        if (!canAddImage) return;
         const items = e.clipboardData.items;
         for (let i = 0; i < items.length; i++) {
             if (items[i].type.indexOf('image') !== -1) {
@@ -107,7 +175,7 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
                 if (blob) {
                     try {
                         const url = await uploadImageAsBase64(blob);
-                        updateBlock(block.id, { image: url });
+                        addImageToBlock(url);
                         e.preventDefault();
                     } catch (error) {
                         console.error("Image upload failed", error);
@@ -133,11 +201,12 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
         e.preventDefault();
         setIsDragging(false);
 
+        if (!canAddImage) return;
         const file = e.dataTransfer.files?.[0];
         if (file && file.type.startsWith('image/')) {
             try {
                 const url = await uploadImageAsBase64(file);
-                updateBlock(block.id, { image: url });
+                addImageToBlock(url);
             } catch (error) {
                 console.error("Image upload failed", error);
             }
@@ -217,17 +286,39 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
                     </button>
                 </div>
 
-                {/* Middle Row: Image Thumbnail + Caption Text */}
+                {/* Middle Row: Image Thumbnails + Caption Text */}
                 <div className={styles.middleRow}>
-                    {/* Image Thumbnail */}
-                    <div
-                        className={styles.thumbnail}
-                        onClick={handleImageClick}
-                        style={{
-                            backgroundImage: block.image ? `url(${block.image})` : 'none'
-                        }}
-                    >
-                        {!block.image && <ImageIcon size={16} color="#555" />}
+                    {/* Image Thumbnails Container */}
+                    <div className={styles.thumbnailContainer}>
+                        {currentImages.map((img, imgIndex) => (
+                            <div
+                                key={img.id}
+                                className={styles.thumbnail}
+                                style={{ backgroundImage: `url(${img.src})` }}
+                                title={`画像 ${imgIndex + 1}`}
+                            >
+                                <button
+                                    className={styles.thumbnailRemove}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeImageFromBlock(img.id);
+                                    }}
+                                    title="画像を削除"
+                                >
+                                    <Trash2 size={10} />
+                                </button>
+                            </div>
+                        ))}
+                        {/* Add Image Button */}
+                        {canAddImage && (
+                            <div
+                                className={`${styles.thumbnail} ${styles.thumbnailAdd}`}
+                                onClick={handleImageClick}
+                                title={currentImages.length === 0 ? '画像を追加' : '2枚目の画像を追加'}
+                            >
+                                <ImageIcon size={16} color="#555" />
+                            </div>
+                        )}
                         <input
                             type="file"
                             ref={fileInputRef}

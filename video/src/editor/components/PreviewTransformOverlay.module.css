@@ -5,8 +5,38 @@
     left: 0;
     right: 0;
     bottom: 0;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 10;
+}
+
+/* Image Frame - clickable area for each image */
+.imageFrame {
+    position: absolute;
+    pointer-events: auto;
+    transform-origin: center center;
+    cursor: pointer;
+    border: 2px dashed transparent;
+    transition: border-color 0.15s;
+}
+
+.imageFrame:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.imageFrameSelected {
+    border-color: #00bcd4;
+}
+
+.imageLabel {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 12px;
+    border-radius: 4px;
+    pointer-events: none;
 }
 
 /* Transform Frame */
