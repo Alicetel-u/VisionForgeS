@@ -7,15 +7,20 @@ import styles from './CaptionBlock.module.css';
 interface Props {
     block: EditorBlock;
     index: number;
+    onFocus: () => void;
 }
 
-export const CaptionBlock: React.FC<Props> = ({ block, index }) => {
+export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus }) => {
     const { updateBlock, removeBlock } = useEditorStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = React.useState(false);
 
     // Handle file selection via dialog
-    const handleImageClick = () => {
+    const handleImageClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Parent click should not trigger focus if specifically clicking image, 
+        // BUT user might want to seek when clicking image too. 
+        // Let's allow propagation for seek, but we need to ensure file picker opens.
+        // Actually, file picker is paramount here.
         fileInputRef.current?.click();
     };
 
@@ -72,6 +77,8 @@ export const CaptionBlock: React.FC<Props> = ({ block, index }) => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onClick={() => onFocus()}
+        // Trigger seek on any click within the block
         >
             <div className={styles.wrapper}>
                 {/* Leftmost: Selection Checkbox */}
@@ -81,7 +88,10 @@ export const CaptionBlock: React.FC<Props> = ({ block, index }) => {
                         type="checkbox"
                         className={styles.checkbox}
                         checked={!!block.isSelected}
-                        onChange={() => updateBlock(block.id, { isSelected: !block.isSelected })}
+                        onChange={(e) => {
+                            e.stopPropagation();
+                            updateBlock(block.id, { isSelected: !block.isSelected });
+                        }}
                     />
                 </div>
 
@@ -112,6 +122,7 @@ export const CaptionBlock: React.FC<Props> = ({ block, index }) => {
                                     value={block.speaker}
                                     onChange={(e) => updateBlock(block.id, { speaker: e.target.value })}
                                     className={styles.selectInput}
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <option value="kanon">雨晴はう (Kanon)</option>
                                     <option value="zundamon">ずんだもん</option>
@@ -127,7 +138,10 @@ export const CaptionBlock: React.FC<Props> = ({ block, index }) => {
 
                         <button
                             className={styles.deleteBtn}
-                            onClick={() => removeBlock(block.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                removeBlock(block.id);
+                            }}
                             aria-label="Delete block"
                         >
                             <Trash2 size={16} />
@@ -139,6 +153,7 @@ export const CaptionBlock: React.FC<Props> = ({ block, index }) => {
                             className={styles.input}
                             value={block.text}
                             onChange={(e) => updateBlock(block.id, { text: e.target.value })}
+                            onFocus={() => onFocus()}
                             placeholder="テキストを入力..."
                             rows={1}
                         />

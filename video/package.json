@@ -1,6 +1,6 @@
 {
   "name": "visionforge-video",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Remotion video project for VisionForge",
   "main": "index.js",
   "scripts": {

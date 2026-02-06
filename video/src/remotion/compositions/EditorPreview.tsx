@@ -61,19 +61,34 @@ export const EditorPreview: React.FC<Props> = ({ blocks }) => {
                             )}
 
                             {/* Text / Caption */}
+                            {/* Text / Caption */}
                             <div style={{
                                 position: 'absolute',
-                                top: '20%',
-                                width: '80%',
-                                textAlign: 'center',
-                                color: 'white',
-                                fontSize: 60,
-                                fontWeight: 'bold',
-                                textShadow: '0 0 10px rgba(0,0,0,0.8)',
-                                fontFamily: 'Keifont, sans-serif',
+                                top: '15%',
+                                width: '100%',
+                                display: 'flex',
+                                justifyContent: 'center',
                                 zIndex: 10
                             }}>
-                                {block.text}
+                                <div style={{
+                                    backgroundColor: '#ff2200', // Vivid Red
+                                    color: 'white',
+                                    fontSize: 56,
+                                    fontWeight: 900,
+                                    fontFamily: '"Mochiy Pop One", "Zen Maru Gothic", sans-serif',
+                                    border: '6px solid black', // Outer border of the box
+                                    padding: '10px 20px',
+                                    maxWidth: '90%',
+                                    textAlign: 'center',
+                                    lineHeight: 1.2,
+                                    boxShadow: '8px 8px 0 rgba(0,0,0,0.5)', // Drop shadow for pop effect
+
+                                    // Text Outline similar to image
+                                    WebkitTextStroke: '3.5px black',
+                                    paintOrder: 'stroke fill'
+                                }}>
+                                    {block.text}
+                                </div>
                             </div>
                         </AbsoluteFill>
                     </Sequence>
