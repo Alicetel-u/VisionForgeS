@@ -92,29 +92,10 @@ export const generateImageId = (): string => {
     return `img_${crypto.randomUUID()}`;
 };
 
-// Clean up old localStorage data that may contain Base64 images
+// Clean up old localStorage data - DISABLED to prevent data loss
+// The old aggressive cleanup was deleting valid data when Base64 fallback was used
 export const cleanupOldStorage = (): void => {
-    const storageKey = 'vision-forge-storage';
-    try {
-        const data = localStorage.getItem(storageKey);
-        if (data) {
-            // If stored data is larger than 100KB, it likely contains Base64 images
-            // Clear it to force a fresh start with IndexedDB-based storage
-            if (data.length > 100 * 1024) {
-                console.warn('Clearing oversized localStorage data to migrate to IndexedDB storage');
-                localStorage.removeItem(storageKey);
-            }
-        }
-    } catch (e) {
-        // If we can't even read localStorage, clear everything
-        console.error('Error accessing localStorage, clearing:', e);
-        try {
-            localStorage.removeItem(storageKey);
-        } catch (e2) {
-            console.error('Failed to clear localStorage:', e2);
-        }
-    }
+    // No-op: We no longer clear localStorage automatically
+    // IndexedDB is now the primary storage for images, with localStorage as reference storage
+    // If quota issues occur, they will be handled at save time
 };
-
-// Run cleanup on module load
-cleanupOldStorage();

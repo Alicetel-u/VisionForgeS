@@ -1,14 +1,77 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 import { EditorBlock } from '../types';
 import { fetchScript, saveScript } from '../api';
 import { saveImage, getImage, deleteImage, isBase64DataUrl, generateImageId } from './imageStorage';
 
-// Map to store image references: blockId -> imageId (for IndexedDB lookup)
+// Custom storage with logging and error handling (singleton instance)
+const loggingStorage: StateStorage = {
+    getItem: (name: string): string | null => {
+        try {
+            const value = localStorage.getItem(name);
+            console.log(`[Storage] getItem('${name}'): ${value ? `${value.length} chars` : 'null'}`);
+            if (value) {
+                try {
+                    const parsed = JSON.parse(value);
+                    const topKeys = Object.keys(parsed);
+                    console.log(`[Storage] topLevelKeys:`, topKeys.join(', '));
+                    console.log(`[Storage] hasState:`, !!parsed?.state);
+                    console.log(`[Storage] version:`, parsed?.version);
+                    if (parsed?.state) {
+                        console.log(`[Storage] state keys:`, Object.keys(parsed.state).join(', '));
+                    }
+                    // Check if blocks exist and have images
+                    if (parsed?.state?.blocks) {
+                        console.log(`[Storage] Blocks count:`, parsed.state.blocks.length);
+                        parsed.state.blocks.forEach((b: any, i: number) => {
+                            if (b.images?.length || b.image) {
+                                console.log(`[Storage] Block ${i} has images:`, {
+                                    image: b.image?.substring(0, 50),
+                                    images: b.images?.map((img: any) => ({ id: img.id, src: img.src?.substring(0, 50) }))
+                                });
+                            }
+                        });
+                    }
+                } catch (parseErr) {
+                    console.error(`[Storage] JSON parse error:`, parseErr);
+                }
+            }
+            return value;
+        } catch (e) {
+            console.error(`[Storage] getItem error:`, e);
+            return null;
+        }
+    },
+    setItem: (name: string, value: string): void => {
+        try {
+            console.log(`[Storage] setItem('${name}'): ${value.length} chars`);
+            localStorage.setItem(name, value);
+            console.log(`[Storage] setItem success`);
+        } catch (e) {
+            console.error(`[Storage] setItem error (likely quota exceeded):`, e);
+            // Try to show what we're trying to save (truncated)
+            console.log(`[Storage] Failed value preview:`, value.substring(0, 500));
+        }
+    },
+    removeItem: (name: string): void => {
+        try {
+            console.log(`[Storage] removeItem('${name}')`);
+            localStorage.removeItem(name);
+        } catch (e) {
+            console.error(`[Storage] removeItem error:`, e);
+        }
+    },
+};
+
+// Map to store image references: blockId -> imageId (for IndexedDB lookup, legacy single image)
 const imageRefMap = new Map<string, string>();
+// Map for multi-image support: `${blockId}:${layerId}` -> indexedDbImageId
+const imagesRefMap = new Map<string, string>();
 // Runtime cache for loaded images: imageId -> dataUrl
 const imageCache = new Map<string, string>();
+// Track which saves have completed (to avoid referencing unsaved images)
+const completedSaves = new Set<string>();
 
 interface EditorState {
     blocks: EditorBlock[];
@@ -34,8 +97,8 @@ interface EditorState {
 }
 
 export const useEditorStore = create<EditorState>()(
-    temporal(
-        persist(
+    persist(
+        temporal(
             (set, get) => ({
                 blocks: [],
                 isLoading: false,
@@ -88,21 +151,48 @@ export const useEditorStore = create<EditorState>()(
                     }),
 
                 updateBlock: (id, partial) => {
-                    // Handle Base64 image: save to IndexedDB
+                    // Handle Base64 image: save to IndexedDB (legacy single image)
                     if (partial.image && isBase64DataUrl(partial.image)) {
                         const imageId = generateImageId();
                         const imageData = partial.image;
 
-                        // Save to IndexedDB asynchronously
-                        saveImage(imageId, imageData).then(() => {
-                            imageRefMap.set(id, imageId);
-                            imageCache.set(imageId, imageData);
-                        }).catch(err => console.error('Failed to save image to IndexedDB:', err));
-
                         // Keep the image in memory for immediate display
-                        // but store only the reference for persistence
                         imageRefMap.set(id, imageId);
                         imageCache.set(imageId, imageData);
+                        // Mark as completed immediately - IndexedDB saves are reliable
+                        completedSaves.add(id);
+
+                        // Save to IndexedDB asynchronously
+                        saveImage(imageId, imageData).catch(err => {
+                            console.error('Failed to save image to IndexedDB:', err);
+                            completedSaves.delete(id); // Rollback on failure
+                        });
+                    }
+
+                    // Handle Base64 images in the images array (multi-image support)
+                    if (partial.images && Array.isArray(partial.images)) {
+                        partial.images.forEach((layer) => {
+                            if (layer.src && isBase64DataUrl(layer.src)) {
+                                const refKey = `${id}:${layer.id}`;
+                                // Check if already saved
+                                if (!imagesRefMap.has(refKey)) {
+                                    const indexedDbImageId = generateImageId();
+                                    const imageData = layer.src;
+
+                                    // Keep in memory for immediate display
+                                    imagesRefMap.set(refKey, indexedDbImageId);
+                                    imageCache.set(indexedDbImageId, imageData);
+                                    // Mark as completed immediately - IndexedDB saves are reliable
+                                    completedSaves.add(refKey);
+
+                                    // Save to IndexedDB asynchronously
+                                    saveImage(indexedDbImageId, imageData).catch(err => {
+                                        console.error('Failed to save multi-image to IndexedDB:', err);
+                                        completedSaves.delete(refKey); // Rollback on failure
+                                    });
+                                }
+                            }
+                        });
                     }
 
                     set((state) => ({
@@ -285,10 +375,20 @@ export const useEditorStore = create<EditorState>()(
                 },
 
                 loadImagesFromStorage: async () => {
+                    console.log('[ImageStore] loadImagesFromStorage called');
                     const { blocks } = get();
+                    console.log('[ImageStore] Current blocks:', blocks.map(b => ({
+                        id: b.id,
+                        image: b.image?.substring(0, 50),
+                        images: b.images?.map(img => ({ id: img.id, src: img.src?.substring(0, 50) }))
+                    })));
+                    console.log('[ImageStore] imagesRefMap:', Array.from(imagesRefMap.entries()));
+                    console.log('[ImageStore] completedSaves:', Array.from(completedSaves));
                     const updatedBlocks = await Promise.all(
                         blocks.map(async (block) => {
-                            // Check if image is an IndexedDB reference
+                            let updatedBlock = { ...block };
+
+                            // Handle legacy single image: Check if image is an IndexedDB reference
                             if (block.image && block.image.startsWith('indexeddb:')) {
                                 const imageId = block.image.replace('indexeddb:', '');
                                 // Try cache first
@@ -299,74 +399,179 @@ export const useEditorStore = create<EditorState>()(
                                     if (imageData) {
                                         imageCache.set(imageId, imageData);
                                         imageRefMap.set(block.id, imageId);
+                                        completedSaves.add(block.id); // Mark as completed
                                     }
                                 }
-                                if (imageData) {
-                                    return { ...block, image: imageData };
-                                }
-                                // Image not found in IndexedDB, clear the reference
-                                return { ...block, image: undefined };
-                            }
-                            // Check if this block has an image reference in the map
-                            const imageId = imageRefMap.get(block.id);
-                            if (imageId && !block.image) {
-                                // Try cache first
-                                let imageData = imageCache.get(imageId);
-                                if (!imageData) {
-                                    // Load from IndexedDB
-                                    imageData = await getImage(imageId) || undefined;
+                                updatedBlock.image = imageData || undefined;
+                            } else {
+                                // Check if this block has an image reference in the map
+                                const imageId = imageRefMap.get(block.id);
+                                if (imageId && !block.image) {
+                                    // Try cache first
+                                    let imageData = imageCache.get(imageId);
+                                    if (!imageData) {
+                                        // Load from IndexedDB
+                                        imageData = await getImage(imageId) || undefined;
+                                        if (imageData) {
+                                            imageCache.set(imageId, imageData);
+                                            completedSaves.add(block.id); // Mark as completed
+                                        }
+                                    }
                                     if (imageData) {
-                                        imageCache.set(imageId, imageData);
+                                        updatedBlock.image = imageData;
                                     }
                                 }
-                                if (imageData) {
-                                    return { ...block, image: imageData };
-                                }
                             }
-                            return block;
+
+                            // Handle images array: Load each image from IndexedDB if needed
+                            if (block.images && Array.isArray(block.images)) {
+                                updatedBlock.images = await Promise.all(
+                                    block.images.map(async (layer) => {
+                                        if (layer.src && layer.src.startsWith('indexeddb:')) {
+                                            const indexedDbImageId = layer.src.replace('indexeddb:', '');
+                                            const refKey = `${block.id}:${layer.id}`;
+                                            // Try cache first
+                                            let imageData = imageCache.get(indexedDbImageId);
+                                            if (!imageData) {
+                                                // Load from IndexedDB
+                                                imageData = await getImage(indexedDbImageId) || undefined;
+                                                if (imageData) {
+                                                    imageCache.set(indexedDbImageId, imageData);
+                                                    imagesRefMap.set(refKey, indexedDbImageId);
+                                                    completedSaves.add(refKey); // Mark as completed
+                                                }
+                                            }
+                                            return {
+                                                ...layer,
+                                                src: imageData || '',
+                                            };
+                                        }
+                                        return layer;
+                                    })
+                                );
+                            }
+
+                            return updatedBlock;
                         })
                     );
                     set({ blocks: updatedBlocks });
                 }
             }),
             {
-                name: 'vision-forge-storage',
-                storage: createJSONStorage(() => localStorage),
-                // Exclude Base64 images from localStorage to avoid quota issues
-                partialize: (state) => ({
-                    blocks: state.blocks.map(block => {
-                        // If image is Base64, save reference instead
-                        if (block.image && isBase64DataUrl(block.image)) {
-                            const imageId = imageRefMap.get(block.id);
-                            return {
-                                ...block,
-                                image: imageId ? `indexeddb:${imageId}` : undefined,
-                            };
-                        }
-                        return block;
-                    }),
-                    // Also save image reference map
-                    imageRefs: Array.from(imageRefMap.entries()),
-                }),
-                onRehydrateStorage: () => (state) => {
-                    // Restore image reference map from persisted state
-                    if (state && (state as any).imageRefs) {
-                        const refs = (state as any).imageRefs as [string, string][];
-                        refs.forEach(([blockId, imageId]) => {
-                            imageRefMap.set(blockId, imageId);
-                        });
-                    }
-
-                    // Load images from IndexedDB
-                    if (state) {
-                        state.loadImagesFromStorage();
-                    }
-                },
+                partialize: (state) => ({ blocks: state.blocks }),
+                limit: 50
             }
         ),
         {
-            partialize: (state) => ({ blocks: state.blocks }),
-            limit: 50
+            name: 'vision-forge-storage',
+            storage: createJSONStorage(() => loggingStorage),
+            // Exclude Base64 images from localStorage to avoid quota issues
+            partialize: (state) => {
+                const result = {
+                    blocks: state.blocks.map(block => {
+                        let updatedBlock = { ...block };
+
+                        // Handle legacy single image: If Base64 and save completed, use reference
+                        if (block.image && isBase64DataUrl(block.image)) {
+                            const imageId = imageRefMap.get(block.id);
+                            // Only use IndexedDB reference if save has completed
+                            if (imageId && completedSaves.has(block.id)) {
+                                updatedBlock.image = `indexeddb:${imageId}`;
+                            } else {
+                                // Save not completed yet - keep Base64 in localStorage as fallback
+                                // This may cause quota issues for very large images, but ensures data isn't lost
+                                updatedBlock.image = block.image;
+                            }
+                        }
+
+                        // Handle images array: Replace Base64 with IndexedDB references only if save completed
+                        if (block.images && Array.isArray(block.images)) {
+                            updatedBlock.images = block.images.map(layer => {
+                                if (layer.src && isBase64DataUrl(layer.src)) {
+                                    const refKey = `${block.id}:${layer.id}`;
+                                    const indexedDbImageId = imagesRefMap.get(refKey);
+                                    // Only use IndexedDB reference if save has completed
+                                    if (indexedDbImageId && completedSaves.has(refKey)) {
+                                        console.log('[ImageStore] partialize: Converting to indexeddb ref:', refKey, indexedDbImageId);
+                                        return {
+                                            ...layer,
+                                            src: `indexeddb:${indexedDbImageId}`,
+                                        };
+                                    }
+                                    // Save not completed - keep Base64 data
+                                    console.log('[ImageStore] partialize: Keeping Base64 for:', refKey);
+                                    return layer;
+                                }
+                                return layer;
+                            });
+                        }
+
+                        return updatedBlock;
+                    }),
+                    // Also save image reference maps (only for completed saves)
+                    imageRefs: Array.from(imageRefMap.entries()).filter(([blockId]) => completedSaves.has(blockId)),
+                    imagesRefs: Array.from(imagesRefMap.entries()).filter(([refKey]) => completedSaves.has(refKey)),
+                };
+                console.log('[ImageStore] partialize result:', {
+                    blocksWithImages: result.blocks.filter(b => b.images?.length).map(b => ({
+                        id: b.id,
+                        images: b.images?.map(img => ({ id: img.id, src: img.src?.substring(0, 50) }))
+                    })),
+                    imageRefs: result.imageRefs,
+                    imagesRefs: result.imagesRefs,
+                });
+                return result;
+            },
+            onRehydrateStorage: () => (state) => {
+                console.log('[ImageStore] onRehydrateStorage called');
+
+                // Direct check of localStorage
+                const rawData = localStorage.getItem('vision-forge-storage');
+                if (rawData) {
+                    try {
+                        const parsed = JSON.parse(rawData);
+                        console.log('[ImageStore] Raw localStorage parsed:', {
+                            hasState: !!parsed?.state,
+                            stateBlocksCount: parsed?.state?.blocks?.length,
+                            imageRefs: parsed?.state?.imageRefs,
+                            imagesRefs: parsed?.state?.imagesRefs,
+                        });
+                    } catch (e) {
+                        console.error('[ImageStore] Raw localStorage parse error:', e);
+                    }
+                }
+
+                console.log('[ImageStore] Persisted state from zustand:', state ? {
+                    blocksCount: state.blocks?.length,
+                    imageRefs: (state as any).imageRefs,
+                    imagesRefs: (state as any).imagesRefs,
+                } : 'null');
+
+                // Restore image reference map from persisted state (legacy single image)
+                if (state && (state as any).imageRefs) {
+                    const refs = (state as any).imageRefs as [string, string][];
+                    console.log('[ImageStore] Restoring imageRefs:', refs);
+                    refs.forEach(([blockId, imageId]) => {
+                        imageRefMap.set(blockId, imageId);
+                        completedSaves.add(blockId); // Mark as completed since it was persisted
+                    });
+                }
+
+                // Restore images reference map from persisted state (multi-image)
+                if (state && (state as any).imagesRefs) {
+                    const refs = (state as any).imagesRefs as [string, string][];
+                    console.log('[ImageStore] Restoring imagesRefs:', refs);
+                    refs.forEach(([refKey, imageId]) => {
+                        imagesRefMap.set(refKey, imageId);
+                        completedSaves.add(refKey); // Mark as completed since it was persisted
+                    });
+                }
+
+                // Load images from IndexedDB
+                if (state) {
+                    state.loadImagesFromStorage();
+                }
+            },
         }
     )
 );
