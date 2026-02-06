@@ -120,7 +120,7 @@ async def get_script():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/save")
-async def save_script(data: ScriptUpdate):
+async def save_script(data: ScriptUpdate, generate_audio: bool = True):
     try:
         # 1. 既存のデータと比較して、テキストが変わったシーンだけ音声を再生成
         old_data = []
@@ -138,28 +138,33 @@ async def save_script(data: ScriptUpdate):
             if scene.action == "none" or (scene.id in old_texts and scene.text != old_texts[scene.id]):
                 scene_dict["action"] = infer_action(scene.text)
             
-            # テキストが変わっていたら音声を再生成
-            if scene.id not in old_texts or scene.text != old_texts[scene.id]:
+            # ファイル名がない場合は生成（パスだけは確保しておく）
+            if not scene.audio:
+                scene_dict["audio"] = f"audio/{uuid.uuid4()}.wav"
+                scene_dict["duration"] = 5.0 # デフォルト
+            
+            # ディレクトリ確認
+            if generate_audio:
+                os.makedirs(os.path.join(PUBLIC_DIR, "audio"), exist_ok=True)
+
+            # 音声生成が必要か判定
+            needs_update = scene.id not in old_texts or scene.text != old_texts[scene.id]
+            file_exists = os.path.exists(os.path.join(PUBLIC_DIR, scene_dict["audio"]))
+
+            if generate_audio and (needs_update or not file_exists):
                 speaker_id = SPEAKER_IDS.get(scene.speaker, 10)
-                
-                # ファイル名がない場合は生成
-                if not scene.audio:
-                    scene_dict["audio"] = f"audio/{uuid.uuid4()}.wav"
-                    # ディレクトリ確認
-                    os.makedirs(os.path.join(PUBLIC_DIR, "audio"), exist_ok=True)
-                
                 duration = generate_voice(scene.text, speaker_id, scene_dict["audio"], scene.speaker)
                 scene_dict["duration"] = duration
-            else:
+            elif not generate_audio and needs_update:
+                 # 音声生成せず保存だけする場合でも、durationは仮で維持するか更新しない
+                 pass
+            elif not needs_update:
                 # 変わっていなければ以前の再生時間を維持
                 old_scene = next((s for s in old_data if s["id"] == scene.id), None)
                 if old_scene:
                     scene_dict["duration"] = old_scene.get("duration", 5.0)
-                    # アクションも明示的に指定されていれば引き継ぐ
-                    if scene.action != "none":
-                        scene_dict["action"] = scene.action
-                    else:
-                        scene_dict["action"] = old_scene.get("action", "none")
+                    if scene.action == "none": # 明示的に変えてない場合のみ継承
+                         scene_dict["action"] = old_scene.get("action", "none")
             
             new_scenes.append(scene_dict)
 

@@ -2,7 +2,8 @@ import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { Player, PlayerRef } from '@remotion/player';
 import {
     Plus, Play, Pause, Grid3X3, MoreHorizontal,
-    Save, Trash2, CheckSquare, Square, RotateCcw
+    Save, Trash2, CheckSquare, Square, RotateCcw,
+    AudioLines
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import { CaptionBlock } from '../components/CaptionBlock';
@@ -12,9 +13,13 @@ import styles from './MainLayout.module.css';
 
 export const MainLayout: React.FC = () => {
     const {
-        blocks, addBlock, saveAndGenerate, isLoading,
+        blocks, addBlock, saveOnly, generateAllAudio, isLoading,
         selectAll, updateBlock, removeSelected, getSelectedCount
     } = useEditorStore();
+
+    // ...
+
+
     const playerRef = React.useRef<PlayerRef>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const videoContainerRef = React.useRef<HTMLDivElement>(null);
@@ -97,6 +102,26 @@ export const MainLayout: React.FC = () => {
                 e.preventDefault();
                 if (selectedCount > 0) {
                     removeSelected();
+                }
+            }
+
+            // Undo/Redo
+            if (e.ctrlKey || e.metaKey) {
+                // Undo: Ctrl+Z
+                if (e.key === 'z') {
+                    e.preventDefault();
+                    const { undo, redo } = (useEditorStore as any).temporal.getState();
+                    if (e.shiftKey) {
+                        redo();
+                    } else {
+                        undo();
+                    }
+                }
+                // Redo: Ctrl+Y
+                if (e.key === 'y') {
+                    e.preventDefault();
+                    const { redo } = (useEditorStore as any).temporal.getState();
+                    redo();
                 }
             }
         };
@@ -297,14 +322,27 @@ export const MainLayout: React.FC = () => {
                         VisionForgeS
                         <span className={styles.version}>v{__APP_VERSION__}</span>
                     </h1>
-                    <button
-                        className={styles.saveBtn}
-                        onClick={() => saveAndGenerate()}
-                        disabled={isLoading}
-                    >
-                        <Save size={16} />
-                        {isLoading ? '生成中...' : '保存'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            className={styles.saveBtn}
+                            onClick={() => saveOnly()}
+                            disabled={isLoading}
+                            title="テキスト内容をサーバーに保存（一瞬で終わります）"
+                        >
+                            <Save size={16} />
+                            保存
+                        </button>
+                        <button
+                            className={styles.saveBtn}
+                            onClick={() => generateAllAudio()}
+                            disabled={isLoading}
+                            style={{ backgroundColor: '#2dd4bf', border: '1px solid #14b8a6' }} // Separate styling for distinction
+                            title="VOICEVOXを使って全音声を生成・更新します（時間がかかります）"
+                        >
+                            <AudioLines size={16} />
+                            全音声生成
+                        </button>
+                    </div>
                 </header>
 
                 {/* Selection Toolbar */}

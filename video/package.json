@@ -22,6 +22,7 @@
     "react-dom": "^18.0.0",
     "remotion": "^4.0.419",
     "uuid": "^13.0.0",
+    "zundo": "^2.3.0",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
