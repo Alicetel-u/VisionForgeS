@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "remotion preview src/index.ts",
+    "editor": "vite",
     "build": "remotion render src/index.ts VisionForgeLong out/cat_video.mp4",
     "build:fast": "remotion render src/index.ts VisionForgeLong out/cat_video_fast.mp4 --width=1280 --height=720 --fps=24 --concurrency=8",
     "build:ultra": "remotion render src/index.ts VisionForgeLong out/cat_video_ultra.mp4 --width=854 --height=480 --fps=20 --concurrency=8",
@@ -13,14 +14,22 @@
     "build:gpu-amd": "remotion render src/index.ts VisionForgeLong out/cat_video_gpu.mov --width=854 --height=480 --fps=20 --concurrency=8 --codec=h264-amf"
   },
   "dependencies": {
+    "@remotion/player": "^4.0.419",
+    "@types/uuid": "^10.0.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.563.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "remotion": "latest"
+    "remotion": "^4.0.419",
+    "uuid": "^13.0.0",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@remotion/cli": "latest",
+    "@remotion/cli": "^4.0.419",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "typescript": "^5.0.0"
+    "@vitejs/plugin-react": "^5.1.3",
+    "typescript": "^5.0.0",
+    "vite": "^7.3.1"
   }
 }

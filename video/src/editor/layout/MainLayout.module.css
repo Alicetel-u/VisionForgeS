@@ -1,0 +1,139 @@
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.editorPane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #333;
+  min-width: 400px;
+}
+
+.header {
+  height: 60px;
+  background-color: #1a1a1a;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #00bcd4;
+  /* Accent color */
+}
+
+.saveBtn {
+  background: linear-gradient(45deg, #00bcd4, #008ba3);
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 188, 212, 0.4);
+  transition: all 0.2s;
+}
+
+.saveBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 188, 212, 0.5);
+}
+
+.saveBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: #444;
+  box-shadow: none;
+  transform: none;
+}
+
+.contentArea {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.block {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  transition: border-color 0.2s;
+}
+
+.block:hover {
+  border-color: #00bcd4;
+}
+
+.blockHeader {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
+.blockInput {
+  width: 100%;
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  min-height: 60px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.previewPane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.playerWrapper {
+  width: 360px;
+  /* 9:16 aspect ratio roughly */
+  aspect-ratio: 9 / 16;
+  background: #000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.previewInfo {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.addBtn {
+  width: 100%;
+  padding: 1rem;
+  background: #1e1e1e;
+  border: 1px dashed #444;
+  color: #888;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.addBtn:hover {
+  background: #252525;
+  border-color: #00bcd4;
+  color: #00bcd4;
+}
