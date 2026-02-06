@@ -1,149 +1,136 @@
+/* Vrew-style Caption Block */
 .container {
-    background-color: #1e1e1e;
+    display: flex;
+    align-items: stretch;
+    background-color: #252525;
     border: 1px solid #333;
     border-radius: 8px;
-    margin-bottom: 0.8rem;
-    padding: 0;
-    transition: all 0.2s ease;
+    margin: 4px 12px;
+    transition: all 0.15s ease;
+    cursor: pointer;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
 }
 
-.wrapper {
-    display: flex;
-    min-height: 80px;
-}
-
-.selectionArea {
-    width: 30px;
-    background-color: #1a1a1a;
-    border-right: 1px solid #333;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 0.5rem;
-    gap: 0.5rem;
-}
-
-.checkbox {
-    cursor: pointer;
-    width: 16px;
-    height: 16px;
-    accent-color: #00bcd4;
-}
-
-.indexNum {
-    font-weight: bold;
-    color: #666;
-    font-size: 0.8rem;
-}
-
-.imageArea {
-    width: 80px;
-    background-color: #111;
-    border-right: 1px solid #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    background-size: cover;
-    background-position: center;
-    transition: filter 0.2s;
-    min-height: 80px;
-}
-
-.imageArea:hover {
-    filter: brightness(1.2);
+.container:hover {
+    background-color: #2a2a2a;
+    border-color: #444;
 }
 
 .container.dragging {
     border-color: #00bcd4;
     background-color: #2a2a2a;
-    box-shadow: 0 0 10px rgba(0, 188, 212, 0.3);
+    box-shadow: 0 0 12px rgba(0, 188, 212, 0.2);
 }
 
 .container.selected {
     border-color: #00bcd4;
-    background-color: #252525;
+    background-color: #2d2d2d;
+    box-shadow: inset 0 0 0 1px rgba(0, 188, 212, 0.3);
 }
 
-.container:focus-within,
-.container:hover {
-    border-color: #00bcd4;
-    background-color: #252525;
-}
-
-.hiddenInput {
-    display: none;
-}
-
-.contentArea {
-    flex: 1;
-    padding: 0.8rem;
+/* Block Index (Number + Checkbox) */
+.blockIndex {
+    width: 40px;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 0;
+    background: #1e1e1e;
+    border-right: 1px solid #333;
+    flex-shrink: 0;
 }
 
-.headerRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.2rem;
+.blockNumber {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #888;
 }
 
-.leftGroup {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
+.checkbox {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: #00bcd4;
+    margin: 0;
 }
 
-.speakerSelector {
+/* Main Content Area */
+.mainContent {
+    flex: 1;
+    padding: 10px 12px;
+    min-width: 0;
+}
+
+/* Top Row: Speaker + Tokens */
+.topRow {
     display: flex;
     align-items: center;
-    background: #333;
-    border-radius: 4px;
-    padding: 0 4px;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+/* Speaker Chip */
+.speakerChip {
+    display: flex;
+    align-items: center;
     gap: 4px;
+    padding: 3px 8px;
+    background: #333;
+    border: 1px solid;
+    border-radius: 4px;
+    flex-shrink: 0;
 }
 
-.speakerIcon {
-    color: #ccc;
-}
-
-.selectInput {
+.speakerSelect {
     background: transparent;
     border: none;
-    color: #fff;
+    color: #e0e0e0;
     font-size: 0.75rem;
-    padding: 2px 4px;
     cursor: pointer;
     outline: none;
+    padding: 0;
+    max-width: 100px;
 }
 
-.selectInput option {
+.speakerSelect option {
     background: #333;
     color: #fff;
 }
 
-.durationChip {
+.speakerMore {
+    color: #666;
+}
+
+/* Word Tokens */
+.tokenList {
     display: flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.token {
+    display: inline-block;
     padding: 2px 8px;
-    background: #333;
+    background: #3a3a3a;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #ccc;
-    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.1s;
 }
 
-.durationChip:hover {
+.token:hover {
     background: #444;
+    color: #fff;
 }
 
-.deleteBtn {
+/* Action Button */
+.actionBtn {
     background: transparent;
     border: none;
     color: #666;
@@ -153,32 +140,210 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.actionBtn:hover {
+    background: #444;
+    color: #00bcd4;
+}
+
+.actionBtnSmall {
+    background: transparent;
+    border: none;
+    color: #555;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.actionBtnSmall:hover {
+    background: #333;
+    color: #00bcd4;
+}
+
+/* Middle Row */
+.middleRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+/* Thumbnail */
+.thumbnail {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background-color: #1a1a1a;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid #333;
+    transition: all 0.15s;
+}
+
+.thumbnail:hover {
+    border-color: #00bcd4;
+}
+
+.hiddenInput {
+    display: none;
+}
+
+/* Caption Area */
+.captionArea {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+    cursor: text;
+}
+
+.captionIcon {
+    color: #555;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.captionText {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.captionInput {
+    flex: 1;
+    background: #1a1a1a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.95rem;
+    padding: 6px 10px;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.captionInput:focus {
+    border-color: #00bcd4;
+}
+
+/* Duration Badge */
+.durationBadge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #333;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #888;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.durationBadge:hover {
+    background: #444;
+    color: #aaa;
+}
+
+.durationInput {
+    width: 40px;
+    background: #1a1a1a;
+    border: 1px solid #00bcd4;
+    border-radius: 2px;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 4px;
+    text-align: center;
+    outline: none;
+}
+
+.durationInput::-webkit-inner-spin-button,
+.durationInput::-webkit-outer-spin-button {
+    opacity: 1;
+}
+
+/* Right Actions */
+.rightActions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    gap: 2px;
+    border-left: 1px solid #333;
+    background: #1e1e1e;
+}
+
+.playBtn {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.playBtn:hover {
+    background: rgba(0, 188, 212, 0.1);
+    color: #00bcd4;
+}
+
+.linkBtn {
+    background: transparent;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.linkBtn:hover {
+    color: #666;
+}
+
+.deleteBtn {
+    background: transparent;
+    border: none;
+    color: #333;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    opacity: 0;
+}
+
+.container:hover .deleteBtn {
+    opacity: 1;
+    color: #555;
 }
 
 .deleteBtn:hover {
-    color: #ff4d4d;
     background: rgba(255, 77, 77, 0.1);
-}
-
-.bodyRow {
-    width: 100%;
-}
-
-.input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: #fff;
-    font-size: 1.1rem;
-    font-family: inherit;
-    resize: none;
-    overflow: hidden;
-    outline: none;
-    padding: 0 0.5rem;
-    line-height: 1.5;
-}
-
-.input::placeholder {
-    color: #555;
+    color: #ff4d4d;
 }

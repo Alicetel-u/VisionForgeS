@@ -1,0 +1,71 @@
+.container {
+    background: #1e1e1e;
+    border-top: 1px solid #333;
+    padding: 12px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.clipTitle {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+
+.exportBtn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.exportBtn:hover {
+    background: #333;
+    color: #00bcd4;
+}
+
+.clipInfo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.thumbnail {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    background-color: #111;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+}
+
+.clipMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.clipLabel {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.clipValue {
+    font-size: 0.8rem;
+    color: #aaa;
+}

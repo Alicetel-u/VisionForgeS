@@ -2,6 +2,7 @@ import json
 import requests
 import asyncio
 import uuid
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -169,6 +170,29 @@ async def save_script(data: ScriptUpdate):
         return {"status": "success", "message": "保存と音声生成、アクション推論が完了しました"}
     except Exception as e:
         print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+from fastapi import File, UploadFile
+import shutil
+
+@app.post("/api/upload_image")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        # ディレクトリ確認
+        upload_dir = os.path.join(PUBLIC_DIR, "images")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # 安全なファイル名を生成
+        file_extension = os.path.splitext(file.filename)[1]
+        new_filename = f"{uuid.uuid4()}{file_extension}"
+        file_location = os.path.join(upload_dir, new_filename)
+        
+        with open(file_location, "wb+") as file_object:
+            shutil.copyfileobj(file.file, file_object)
+            
+        return {"status": "success", "url": f"images/{new_filename}"}
+    except Exception as e:
+        print(f"Error uploading image: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

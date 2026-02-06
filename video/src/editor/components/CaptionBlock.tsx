@@ -1,54 +1,124 @@
-import React, { useRef } from 'react';
-import { Trash2, GripVertical, Clock, User, Image as ImageIcon } from 'lucide-react';
-import { EditorBlock } from '../types';
+import React, { useRef, useMemo } from 'react';
+import {
+    Trash2, Play, Edit3, Link2, MoreHorizontal,
+    User, Image as ImageIcon, MessageSquare, Copy, Clock
+} from 'lucide-react';
+import { EditorBlock, getSpeakerConfig, SPEAKERS } from '../types';
 import { useEditorStore } from '../store/editorStore';
+import { uploadImageAsBase64 } from '../api';
 import styles from './CaptionBlock.module.css';
 
 interface Props {
     block: EditorBlock;
     index: number;
     onFocus: () => void;
+    onPlay: () => void;
 }
 
-export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus }) => {
-    const { updateBlock, removeBlock } = useEditorStore();
+// Simple Japanese text tokenizer (splits on common boundaries)
+const tokenizeText = (text: string): string[] => {
+    if (!text) return [];
+    const tokens: string[] = [];
+    let current = '';
+
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        current += char;
+
+        const particles = ['は', 'が', 'を', 'に', 'で', 'と', 'の', 'も', 'へ', 'から', 'まで', 'より', 'など'];
+        const punctuation = ['、', '。', '！', '？', '・', '「', '」', '『', '』', '（', '）'];
+
+        let shouldSplit = false;
+
+        if (i < text.length - 1) {
+            const twoChar = char + text[i + 1];
+            if (particles.includes(twoChar)) {
+                current += text[i + 1];
+                i++;
+                shouldSplit = true;
+            }
+        }
+
+        if (!shouldSplit && particles.includes(char)) {
+            shouldSplit = true;
+        }
+
+        if (punctuation.includes(char)) {
+            shouldSplit = true;
+        }
+
+        if (current.length >= 4 && !shouldSplit) {
+            shouldSplit = true;
+        }
+
+        if (shouldSplit && current.trim()) {
+            tokens.push(current.trim());
+            current = '';
+        }
+    }
+
+    if (current.trim()) {
+        tokens.push(current.trim());
+    }
+
+    return tokens;
+};
+
+export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay }) => {
+    const { updateBlock, removeBlock, duplicateBlock } = useEditorStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = React.useState(false);
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [showDurationEdit, setShowDurationEdit] = React.useState(false);
 
-    // Handle file selection via dialog
+    const speakerConfig = getSpeakerConfig(block.speaker);
+    const tokens = useMemo(() => tokenizeText(block.text), [block.text]);
+
+    // Toggle selection (for multi-select with Ctrl/Cmd)
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        e.stopPropagation();
+        updateBlock(block.id, { isSelected: e.target.checked });
+    };
+
+    // Handle file selection
     const handleImageClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Parent click should not trigger focus if specifically clicking image, 
-        // BUT user might want to seek when clicking image too. 
-        // Let's allow propagation for seek, but we need to ensure file picker opens.
-        // Actually, file picker is paramount here.
+        e.stopPropagation();
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            const url = URL.createObjectURL(file);
-            updateBlock(block.id, { image: url });
+            try {
+                const url = await uploadImageAsBase64(file);
+                updateBlock(block.id, { image: url });
+            } catch (error) {
+                console.error("Image upload failed", error);
+            }
         }
     };
 
-    // Handle paste events (Ctrl+V)
-    const handlePaste = (e: React.ClipboardEvent) => {
+    // Handle paste events
+    const handlePaste = async (e: React.ClipboardEvent) => {
         const items = e.clipboardData.items;
         for (let i = 0; i < items.length; i++) {
             if (items[i].type.indexOf('image') !== -1) {
                 const blob = items[i].getAsFile();
                 if (blob) {
-                    const url = URL.createObjectURL(blob);
-                    updateBlock(block.id, { image: url });
-                    e.preventDefault(); // Prevent pasting the file name into text area if focused there
+                    try {
+                        const url = await uploadImageAsBase64(blob);
+                        updateBlock(block.id, { image: url });
+                        e.preventDefault();
+                    } catch (error) {
+                        console.error("Image upload failed", error);
+                    }
                 }
                 break;
             }
         }
     };
 
-    // Drag and Drop Handlers
+    // Drag and Drop
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
@@ -59,15 +129,31 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus }) => {
         setIsDragging(false);
     };
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
 
         const file = e.dataTransfer.files?.[0];
         if (file && file.type.startsWith('image/')) {
-            const url = URL.createObjectURL(file);
-            updateBlock(block.id, { image: url });
+            try {
+                const url = await uploadImageAsBase64(file);
+                updateBlock(block.id, { image: url });
+            } catch (error) {
+                console.error("Image upload failed", error);
+            }
         }
+    };
+
+    // Duplicate block
+    const handleDuplicate = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        duplicateBlock(block.id);
+    };
+
+    // Double click to edit
+    const handleDoubleClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsEditing(true);
     };
 
     return (
@@ -77,88 +163,181 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus }) => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => onFocus()}
-        // Trigger seek on any click within the block
+            onClick={onFocus}
         >
-            <div className={styles.wrapper}>
-                {/* Leftmost: Selection Checkbox */}
-                <div className={styles.selectionArea}>
-                    <div className={styles.indexNum}>{index + 1}</div>
-                    <input
-                        type="checkbox"
-                        className={styles.checkbox}
-                        checked={!!block.isSelected}
-                        onChange={(e) => {
-                            e.stopPropagation();
-                            updateBlock(block.id, { isSelected: !block.isSelected });
-                        }}
-                    />
-                </div>
+            {/* Block Number & Checkbox */}
+            <div className={styles.blockIndex}>
+                <span className={styles.blockNumber}>{index + 1}</span>
+                <input
+                    type="checkbox"
+                    className={styles.checkbox}
+                    checked={!!block.isSelected}
+                    onChange={handleCheckboxChange}
+                    onClick={(e) => e.stopPropagation()}
+                />
+            </div>
 
-                {/* Left: Image Thumbnail / Picker */}
-                <div
-                    className={styles.imageArea}
-                    onClick={handleImageClick}
-                    style={{ backgroundImage: block.image ? `url(${block.image})` : 'none' }}
-                    title="クリックして画像を選択、または画像を貼り付け、D&D"
-                >
-                    {!block.image && <ImageIcon size={24} color="#666" />}
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className={styles.hiddenInput}
-                        accept="image/*"
-                        onChange={handleFileChange}
-                    />
-                </div>
-
-                {/* Right: Content */}
-                <div className={styles.contentArea}>
-                    <div className={styles.headerRow}>
-                        <div className={styles.leftGroup}>
-                            <div className={styles.speakerSelector}>
-                                <User size={14} className={styles.speakerIcon} />
-                                <select
-                                    value={block.speaker}
-                                    onChange={(e) => updateBlock(block.id, { speaker: e.target.value })}
-                                    className={styles.selectInput}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <option value="kanon">雨晴はう (Kanon)</option>
-                                    <option value="zundamon">ずんだもん</option>
-                                    <option value="metan">四国めたん</option>
-                                    <option value="tsumugi">春日部つむぎ</option>
-                                </select>
-                            </div>
-                            <div className={styles.durationChip}>
-                                <Clock size={14} />
-                                <span>{block.durationInSeconds.toFixed(2)}s</span>
-                            </div>
-                        </div>
-
-                        <button
-                            className={styles.deleteBtn}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                removeBlock(block.id);
-                            }}
-                            aria-label="Delete block"
+            {/* Main Content */}
+            <div className={styles.mainContent}>
+                {/* Top Row: Speaker + Tokens + Actions */}
+                <div className={styles.topRow}>
+                    {/* Speaker Selector */}
+                    <div className={styles.speakerChip} style={{ borderColor: speakerConfig.color }}>
+                        <User size={12} style={{ color: speakerConfig.color }} />
+                        <select
+                            value={block.speaker}
+                            onChange={(e) => updateBlock(block.id, { speaker: e.target.value })}
+                            className={styles.speakerSelect}
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <Trash2 size={16} />
-                        </button>
+                            {SPEAKERS.map(s => (
+                                <option key={s.id} value={s.id}>{s.displayName}</option>
+                            ))}
+                        </select>
+                        <MoreHorizontal size={12} className={styles.speakerMore} />
                     </div>
 
-                    <div className={styles.bodyRow}>
-                        <textarea
-                            className={styles.input}
-                            value={block.text}
-                            onChange={(e) => updateBlock(block.id, { text: e.target.value })}
-                            onFocus={() => onFocus()}
-                            placeholder="テキストを入力..."
-                            rows={1}
+                    {/* Word Tokens */}
+                    <div className={styles.tokenList}>
+                        {tokens.map((token, i) => (
+                            <span key={i} className={styles.token}>{token}</span>
+                        ))}
+                    </div>
+
+                    {/* Edit Button */}
+                    <button
+                        className={styles.actionBtn}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditing(!isEditing);
+                        }}
+                        title="編集"
+                    >
+                        <Edit3 size={14} />
+                    </button>
+                </div>
+
+                {/* Middle Row: Image Thumbnail + Caption Text */}
+                <div className={styles.middleRow}>
+                    {/* Image Thumbnail */}
+                    <div
+                        className={styles.thumbnail}
+                        onClick={handleImageClick}
+                        style={{
+                            backgroundImage: block.image ? `url(${block.image})` : 'none'
+                        }}
+                    >
+                        {!block.image && <ImageIcon size={16} color="#555" />}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className={styles.hiddenInput}
+                            accept="image/*"
+                            onChange={handleFileChange}
                         />
                     </div>
+
+                    {/* Caption / Subtitle */}
+                    <div className={styles.captionArea} onDoubleClick={handleDoubleClick}>
+                        <MessageSquare size={14} className={styles.captionIcon} />
+                        {isEditing ? (
+                            <textarea
+                                className={styles.captionInput}
+                                value={block.text}
+                                onChange={(e) => updateBlock(block.id, { text: e.target.value })}
+                                onBlur={() => setIsEditing(false)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        setIsEditing(false);
+                                    }
+                                    if (e.key === 'Escape') {
+                                        setIsEditing(false);
+                                    }
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                autoFocus
+                                rows={2}
+                            />
+                        ) : (
+                            <span
+                                className={styles.captionText}
+                                style={{ color: speakerConfig.color }}
+                            >
+                                {block.text || 'テキストを入力...'}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Duration Badge */}
+                    <div
+                        className={styles.durationBadge}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowDurationEdit(!showDurationEdit);
+                        }}
+                        title="再生時間を編集"
+                    >
+                        <Clock size={10} />
+                        {showDurationEdit ? (
+                            <input
+                                type="number"
+                                step="0.1"
+                                min="0.5"
+                                max="30"
+                                value={block.durationInSeconds}
+                                onChange={(e) => updateBlock(block.id, { durationInSeconds: parseFloat(e.target.value) || 2 })}
+                                onBlur={() => setShowDurationEdit(false)}
+                                onClick={(e) => e.stopPropagation()}
+                                className={styles.durationInput}
+                                autoFocus
+                            />
+                        ) : (
+                            <span>{block.durationInSeconds.toFixed(1)}s</span>
+                        )}
+                    </div>
                 </div>
+            </div>
+
+            {/* Right Actions */}
+            <div className={styles.rightActions}>
+                {/* Play Button */}
+                <button
+                    className={styles.playBtn}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onPlay();
+                    }}
+                    title="このクリップを再生"
+                >
+                    <Play size={16} fill="currentColor" />
+                </button>
+
+                {/* Duplicate Button */}
+                <button
+                    className={styles.actionBtnSmall}
+                    onClick={handleDuplicate}
+                    title="複製"
+                >
+                    <Copy size={12} />
+                </button>
+
+                {/* Link Icon */}
+                <button className={styles.linkBtn} title="リンク">
+                    <Link2 size={14} />
+                </button>
+
+                {/* Delete (shown on hover) */}
+                <button
+                    className={styles.deleteBtn}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        removeBlock(block.id);
+                    }}
+                    title="削除"
+                >
+                    <Trash2 size={14} />
+                </button>
             </div>
         </div>
     );

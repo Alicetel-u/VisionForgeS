@@ -1,0 +1,165 @@
+/* Preview Transform Overlay */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Transform Frame */
+.transformFrame {
+    position: absolute;
+    pointer-events: auto;
+    transform-origin: center center;
+}
+
+/* Move Area */
+.moveArea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    cursor: move;
+}
+
+/* Edge Lines */
+.edge {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+}
+
+.edgeTop {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+}
+
+.edgeRight {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2px;
+}
+
+.edgeBottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+}
+
+.edgeLeft {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 2px;
+}
+
+/* Corner Handles */
+.cornerHandle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border: 2px solid #333;
+    border-radius: 50%;
+    cursor: nwse-resize;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.cornerHandle:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.topLeft {
+    top: 0;
+    left: 0;
+    cursor: nwse-resize;
+}
+
+.topRight {
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+    cursor: nesw-resize;
+}
+
+.topRight:hover {
+    transform: translate(50%, -50%) scale(1.2);
+}
+
+.bottomLeft {
+    bottom: 0;
+    left: 0;
+    transform: translate(-50%, 50%);
+    cursor: nesw-resize;
+}
+
+.bottomLeft:hover {
+    transform: translate(-50%, 50%) scale(1.2);
+}
+
+.bottomRight {
+    bottom: 0;
+    right: 0;
+    transform: translate(50%, 50%);
+    cursor: nwse-resize;
+}
+
+.bottomRight:hover {
+    transform: translate(50%, 50%) scale(1.2);
+}
+
+/* Rotate Handle */
+.rotateHandle {
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    background: #333;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    cursor: ew-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+    z-index: 3;
+    transition: transform 0.1s, background 0.15s;
+}
+
+.rotateHandle:hover {
+    transform: translate(-50%, 0) scale(1.15);
+    background: #555;
+}
+
+/* Reset Button */
+.resetBtn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.75rem;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.15s;
+}
+
+.resetBtn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile, Audio } from 'remotion';
 import { EditorBlock } from '../../editor/types';
 
@@ -9,37 +9,61 @@ interface Props {
 export const EditorPreview: React.FC<Props> = ({ blocks }) => {
     const { fps } = useVideoConfig();
 
-    let currentFrame = 0;
+    // Pre-calculate frame positions for each block
+    const blockFrames = useMemo(() => {
+        const frames: { from: number; duration: number }[] = [];
+        let currentFrame = 0;
+
+        blocks.forEach((block) => {
+            const durationInFrames = Math.ceil(block.durationInSeconds * fps);
+            frames.push({ from: currentFrame, duration: durationInFrames });
+            currentFrame += durationInFrames;
+        });
+
+        return frames;
+    }, [blocks, fps]);
 
     return (
         <AbsoluteFill style={{ backgroundColor: '#000' }}>
+            {blocks.map((block, index) => {
+                const { from, duration } = blockFrames[index] || { from: 0, duration: 60 };
 
-            {blocks.map((block) => {
-                const durationInFrames = Math.ceil(block.durationInSeconds * fps);
-                const from = currentFrame;
-                currentFrame += durationInFrames;
+                // Determine image source
+                const getImageSrc = () => {
+                    if (!block.image) return null;
+                    if (block.image.startsWith('http') ||
+                        block.image.startsWith('blob:') ||
+                        block.image.startsWith('data:')) {
+                        return block.image;
+                    }
+                    return staticFile(block.image);
+                };
+
+                const imageSrc = getImageSrc();
 
                 return (
-                    <Sequence key={block.id} from={from} durationInFrames={durationInFrames}>
+                    <Sequence key={block.id} from={from} durationInFrames={duration}>
                         {block.audio && <Audio src={staticFile(block.audio)} />}
                         <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
 
                             {/* Background Image if exists */}
-                            {block.image && (
+                            {imageSrc && (
                                 <AbsoluteFill>
                                     <Img
-                                        src={
-                                            block.image.startsWith('http') || block.image.startsWith('blob:')
-                                                ? block.image
-                                                : staticFile(block.image)
-                                        }
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        src={imageSrc}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            transform: `translate(${block.imageX || 0}px, ${block.imageY || 0}px) scale(${block.imageScale || 1}) rotate(${block.imageRotation || 0}deg)`,
+                                            transformOrigin: 'center center'
+                                        }}
                                     />
                                 </AbsoluteFill>
                             )}
 
                             {/* Character Image Placeholder (Overlay) */}
-                            {!block.image && (
+                            {!imageSrc && (
                                 <div style={{
                                     position: 'absolute',
                                     bottom: 0,
@@ -61,7 +85,6 @@ export const EditorPreview: React.FC<Props> = ({ blocks }) => {
                             )}
 
                             {/* Text / Caption */}
-                            {/* Text / Caption */}
                             <div style={{
                                 position: 'absolute',
                                 top: '15%',
@@ -71,19 +94,17 @@ export const EditorPreview: React.FC<Props> = ({ blocks }) => {
                                 zIndex: 10
                             }}>
                                 <div style={{
-                                    backgroundColor: '#ff2200', // Vivid Red
+                                    backgroundColor: '#ff2200',
                                     color: 'white',
                                     fontSize: 56,
                                     fontWeight: 900,
                                     fontFamily: '"Mochiy Pop One", "Zen Maru Gothic", sans-serif',
-                                    border: '6px solid black', // Outer border of the box
+                                    border: '6px solid black',
                                     padding: '10px 20px',
                                     maxWidth: '90%',
                                     textAlign: 'center',
                                     lineHeight: 1.2,
-                                    boxShadow: '8px 8px 0 rgba(0,0,0,0.5)', // Drop shadow for pop effect
-
-                                    // Text Outline similar to image
+                                    boxShadow: '8px 8px 0 rgba(0,0,0,0.5)',
                                     WebkitTextStroke: '3.5px black',
                                     paintOrder: 'stroke fill'
                                 }}>

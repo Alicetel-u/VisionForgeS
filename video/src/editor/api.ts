@@ -23,11 +23,11 @@ export const fetchScript = async (): Promise<EditorBlock[]> => {
 export const saveScript = async (blocks: EditorBlock[]) => {
     // Transform EditorBlock back to backend format
     const scenes = blocks.map((block, index) => ({
-        id: parseInt(block.id) || Date.now() + index, // Ensure numeric ID for backend if possible, or handle mapping
+        id: parseInt(block.id) || Date.now() + index,
         speaker: block.speaker,
         text: block.text,
-        emotion: "normal", // Default
-        action: "none",    // Default
+        emotion: "normal",
+        action: "none",
         audio: block.audio || "",
         image: block.image,
         duration: block.durationInSeconds
@@ -46,4 +46,54 @@ export const saveScript = async (blocks: EditorBlock[]) => {
     }
 
     return response.json();
+};
+
+export const uploadImage = async (file: File): Promise<string> => {
+    // Try backend upload first
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch(`${API_BASE}/upload_image`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.url;
+        }
+    } catch (error) {
+        console.warn('Backend upload failed, using local blob URL:', error);
+    }
+
+    // Fallback: Create a local blob URL
+    // This works for preview but won't persist across sessions
+    const blobUrl = URL.createObjectURL(file);
+    return blobUrl;
+};
+
+// Convert blob URL to base64 for persistence (optional utility)
+export const blobUrlToBase64 = (blobUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        fetch(blobUrl)
+            .then(res => res.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            })
+            .catch(reject);
+    });
+};
+
+// Upload image and convert to base64 for persistence
+export const uploadImageAsBase64 = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 };

@@ -1,0 +1,140 @@
+.container {
+    padding: 10px 12px;
+    background-color: #1e1e1e;
+    border-top: 1px solid #333;
+    font-size: 0.75rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.title {
+    font-weight: 600;
+    color: #00bcd4;
+    font-size: 0.8rem;
+}
+
+.resetBtn {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    cursor: pointer;
+    color: #888;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.resetBtn:hover {
+    background: #333;
+    color: #00bcd4;
+    border-color: #00bcd4;
+}
+
+.controlRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.icon {
+    color: #666;
+    flex-shrink: 0;
+}
+
+.iconPlaceholder {
+    width: 12px;
+    flex-shrink: 0;
+}
+
+.inputGroup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.inputGroup label {
+    width: 24px;
+    color: #888;
+    font-size: 0.7rem;
+}
+
+.slider {
+    flex: 1;
+    height: 3px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #333;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00bcd4;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00bcd4;
+    cursor: pointer;
+    border: none;
+}
+
+.value {
+    width: 36px;
+    text-align: right;
+    color: #aaa;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+}
+
+.quickActions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #333;
+}
+
+.quickActions button {
+    padding: 4px 10px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #888;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.quickActions button:hover {
+    background: #333;
+    color: #00bcd4;
+    border-color: #00bcd4;
+}
+
+.quickActions button.active {
+    background: #00bcd4;
+    color: #000;
+    border-color: #00bcd4;
+}

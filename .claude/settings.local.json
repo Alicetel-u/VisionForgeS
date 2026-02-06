@@ -4,7 +4,13 @@
       "Bash(python:*)",
       "Bash(dir \"C:\\\\Users\\\\【RST-9】リバイブ新所沢\\\\Downloads\" /b)",
       "Bash(findstr:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "WebSearch",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(npm run:*)",
+      "Bash(pushd:*)"
     ]
   }
 }

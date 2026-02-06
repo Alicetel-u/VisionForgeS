@@ -2,18 +2,29 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { EditorBlock } from '../types';
 import { fetchScript, saveScript } from '../api';
+import { saveImage, getImage, deleteImage, isBase64DataUrl, generateImageId } from './imageStorage';
+
+// Map to store image references: blockId -> imageId (for IndexedDB lookup)
+const imageRefMap = new Map<string, string>();
+// Runtime cache for loaded images: imageId -> dataUrl
+const imageCache = new Map<string, string>();
 
 interface EditorState {
     blocks: EditorBlock[];
     isLoading: boolean;
     addBlock: (text?: string) => void;
+    insertBlockAfter: (afterId: string, text?: string) => void;
+    duplicateBlock: (id: string) => void;
     updateBlock: (id: string, partial: Partial<EditorBlock>) => void;
     removeBlock: (id: string) => void;
+    removeSelected: () => void;
     reorderBlocks: (fromIndex: number, toIndex: number) => void;
     toggleSelection: (id: string) => void;
     selectAll: (select: boolean) => void;
+    getSelectedCount: () => number;
     loadScript: () => Promise<void>;
     saveAndGenerate: () => Promise<void>;
+    loadImagesFromStorage: () => Promise<void>;
 }
 
 export const useEditorStore = create<EditorState>()(
@@ -29,20 +40,77 @@ export const useEditorStore = create<EditorState>()(
                         {
                             id: crypto.randomUUID(),
                             text,
-                            speaker: 'kanon', // Default to Kanon as per backend default
+                            speaker: 'metan', // Default speaker
                             durationInSeconds: 2.0,
                         },
                     ],
                 })),
 
-            updateBlock: (id, partial) =>
+            insertBlockAfter: (afterId, text = '') =>
+                set((state) => {
+                    const index = state.blocks.findIndex(b => b.id === afterId);
+                    if (index === -1) return state;
+
+                    const newBlock: EditorBlock = {
+                        id: crypto.randomUUID(),
+                        text,
+                        speaker: 'metan',
+                        durationInSeconds: 2.0,
+                    };
+
+                    const newBlocks = [...state.blocks];
+                    newBlocks.splice(index + 1, 0, newBlock);
+                    return { blocks: newBlocks };
+                }),
+
+            duplicateBlock: (id) =>
+                set((state) => {
+                    const block = state.blocks.find(b => b.id === id);
+                    if (!block) return state;
+
+                    const index = state.blocks.findIndex(b => b.id === id);
+                    const newBlock: EditorBlock = {
+                        ...block,
+                        id: crypto.randomUUID(),
+                        isSelected: false,
+                    };
+
+                    const newBlocks = [...state.blocks];
+                    newBlocks.splice(index + 1, 0, newBlock);
+                    return { blocks: newBlocks };
+                }),
+
+            updateBlock: (id, partial) => {
+                // Handle Base64 image: save to IndexedDB
+                if (partial.image && isBase64DataUrl(partial.image)) {
+                    const imageId = generateImageId();
+                    const imageData = partial.image;
+
+                    // Save to IndexedDB asynchronously
+                    saveImage(imageId, imageData).then(() => {
+                        imageRefMap.set(id, imageId);
+                        imageCache.set(imageId, imageData);
+                    }).catch(err => console.error('Failed to save image to IndexedDB:', err));
+
+                    // Keep the image in memory for immediate display
+                    // but store only the reference for persistence
+                    imageRefMap.set(id, imageId);
+                    imageCache.set(imageId, imageData);
+                }
+
                 set((state) => ({
                     blocks: state.blocks.map((b) => (b.id === id ? { ...b, ...partial } : b)),
-                })),
+                }));
+            },
 
             removeBlock: (id) =>
                 set((state) => ({
                     blocks: state.blocks.filter((b) => b.id !== id),
+                })),
+
+            removeSelected: () =>
+                set((state) => ({
+                    blocks: state.blocks.filter((b) => !b.isSelected),
                 })),
 
             reorderBlocks: (fromIndex, toIndex) =>
@@ -65,6 +133,10 @@ export const useEditorStore = create<EditorState>()(
                     blocks: state.blocks.map((b) => ({ ...b, isSelected: select })),
                 })),
 
+            getSelectedCount: () => {
+                return get().blocks.filter(b => b.isSelected).length;
+            },
+
             loadScript: async () => {
                 set({ isLoading: true });
                 try {
@@ -72,14 +144,12 @@ export const useEditorStore = create<EditorState>()(
                     if (blocks.length > 0) {
                         set({ blocks });
                     } else {
-                        // Only add default if absolutely empty and pulling from server returns nothing
                         if (get().blocks.length === 0) {
                             get().addBlock("こんにちは、VisionForgeSへようこそ！");
                         }
                     }
                 } catch (e) {
                     console.error(e);
-                    // Do not overwrite local blocks on error
                 } finally {
                     set({ isLoading: false });
                 }
@@ -90,7 +160,6 @@ export const useEditorStore = create<EditorState>()(
                 try {
                     const { blocks } = get();
                     await saveScript(blocks);
-                    // Reload to get updated durations and audio paths
                     const updatedBlocks = await fetchScript();
                     set({ blocks: updatedBlocks });
                 } catch (e) {
@@ -99,12 +168,86 @@ export const useEditorStore = create<EditorState>()(
                 } finally {
                     set({ isLoading: false });
                 }
+            },
+
+            loadImagesFromStorage: async () => {
+                const { blocks } = get();
+                const updatedBlocks = await Promise.all(
+                    blocks.map(async (block) => {
+                        // Check if image is an IndexedDB reference
+                        if (block.image && block.image.startsWith('indexeddb:')) {
+                            const imageId = block.image.replace('indexeddb:', '');
+                            // Try cache first
+                            let imageData = imageCache.get(imageId);
+                            if (!imageData) {
+                                // Load from IndexedDB
+                                imageData = await getImage(imageId) || undefined;
+                                if (imageData) {
+                                    imageCache.set(imageId, imageData);
+                                    imageRefMap.set(block.id, imageId);
+                                }
+                            }
+                            if (imageData) {
+                                return { ...block, image: imageData };
+                            }
+                            // Image not found in IndexedDB, clear the reference
+                            return { ...block, image: undefined };
+                        }
+                        // Check if this block has an image reference in the map
+                        const imageId = imageRefMap.get(block.id);
+                        if (imageId && !block.image) {
+                            // Try cache first
+                            let imageData = imageCache.get(imageId);
+                            if (!imageData) {
+                                // Load from IndexedDB
+                                imageData = await getImage(imageId) || undefined;
+                                if (imageData) {
+                                    imageCache.set(imageId, imageData);
+                                }
+                            }
+                            if (imageData) {
+                                return { ...block, image: imageData };
+                            }
+                        }
+                        return block;
+                    })
+                );
+                set({ blocks: updatedBlocks });
             }
         }),
         {
-            name: 'vision-forge-storage', // name of the item in the storage (must be unique)
-            storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
-            partialize: (state) => ({ blocks: state.blocks }), // Only persist blocks, not isLoading
+            name: 'vision-forge-storage',
+            storage: createJSONStorage(() => localStorage),
+            // Exclude Base64 images from localStorage to avoid quota issues
+            partialize: (state) => ({
+                blocks: state.blocks.map(block => {
+                    // If image is Base64, save reference instead
+                    if (block.image && isBase64DataUrl(block.image)) {
+                        const imageId = imageRefMap.get(block.id);
+                        return {
+                            ...block,
+                            image: imageId ? `indexeddb:${imageId}` : undefined,
+                        };
+                    }
+                    return block;
+                }),
+                // Also save image reference map
+                imageRefs: Array.from(imageRefMap.entries()),
+            }),
+            onRehydrateStorage: () => (state) => {
+                // Restore image reference map from persisted state
+                if (state && (state as any).imageRefs) {
+                    const refs = (state as any).imageRefs as [string, string][];
+                    refs.forEach(([blockId, imageId]) => {
+                        imageRefMap.set(blockId, imageId);
+                    });
+                }
+
+                // Load images from IndexedDB
+                if (state) {
+                    state.loadImagesFromStorage();
+                }
+            },
         }
     )
 );
