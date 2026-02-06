@@ -9,55 +9,28 @@
 
 /* ========== Left Panel - Preview ========== */
 .previewPane {
-    width: 340px;
-    min-width: 250px;
-    max-width: 600px;
+    width: 450px;
     display: flex;
     flex-direction: column;
-    background-color: #1a1a1a;
+    background-color: #000;
     flex-shrink: 0;
-}
-
-/* Resizable Divider */
-.resizer {
-    width: 6px;
-    background: #333;
-    cursor: col-resize;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
     position: relative;
-    z-index: 10;
+    border-right: 1px solid #333;
 }
 
-.resizer:hover,
-.resizerActive {
-    background: #00bcd4;
-}
+/* Resizable Divider - REMOVED */
 
-.resizerHandle {
-    width: 2px;
-    height: 40px;
-    background: #555;
-    border-radius: 1px;
-    transition: background 0.15s;
-}
-
-.resizer:hover .resizerHandle,
-.resizerActive .resizerHandle {
-    background: #fff;
-}
 
 .videoContainer {
-    flex: 1;
+    width: 100%;
+    aspect-ratio: 9 / 16;
     background: #000;
+    overflow: hidden;
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    min-height: 300px;
-    position: relative;
+    flex-shrink: 0;
 }
 
 /* Reset Button */
@@ -87,10 +60,16 @@
     color: #fff;
 }
 
+/* Fixed Controls Bar - below video */
+.controlsBar {
+    flex-shrink: 0;
+    background: #1a1a1a;
+    border-top: 1px solid #2a2a2a;
+}
+
 /* Progress Bar */
 .progressContainer {
-    padding: 0 12px 8px;
-    background: #1a1a1a;
+    padding: 8px 12px 4px;
 }
 
 .progressBar {
@@ -99,6 +78,7 @@
     background: #333;
     border-radius: 2px;
     cursor: pointer;
+    transition: height 0.1s;
 }
 
 .progressBar:hover {
@@ -110,7 +90,7 @@
     top: 0;
     left: 0;
     height: 100%;
-    background: #fff;
+    background: #00bcd4;
     border-radius: 2px;
     transition: width 0.1s linear;
 }
@@ -121,10 +101,12 @@
     transform: translate(-50%, -50%);
     width: 12px;
     height: 12px;
-    background: #fff;
+    background: #00bcd4;
+    border: 2px solid #fff;
     border-radius: 50%;
     opacity: 0;
     transition: opacity 0.15s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .progressBar:hover .progressThumb {
@@ -136,8 +118,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
-    background: #1a1a1a;
+    padding: 8px 12px 10px;
 }
 
 .controlsSpacer {
@@ -145,10 +126,10 @@
 }
 
 .playBtn {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    background: transparent;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #00bcd4;
     border: none;
     color: #fff;
     cursor: pointer;
@@ -160,7 +141,12 @@
 }
 
 .playBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #00a5bb;
+    transform: scale(1.05);
+}
+
+.playBtn:active {
+    transform: scale(0.95);
 }
 
 .timeDisplay {
@@ -168,18 +154,19 @@
     align-items: center;
     font-size: 0.8rem;
     font-family: 'JetBrains Mono', 'Consolas', monospace;
-    color: #999;
+    color: #ccc;
+    margin-left: 4px;
 }
 
 .timeSeparator {
-    margin: 0 3px;
-    color: #555;
+    margin: 0 4px;
+    color: #666;
 }
 
 .controlBtn {
-    background: transparent;
+    background: #2a2a2a;
     border: none;
-    color: #888;
+    color: #aaa;
     cursor: pointer;
     padding: 6px 10px;
     border-radius: 4px;
@@ -191,7 +178,7 @@
 }
 
 .controlBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #3a3a3a;
     color: #fff;
 }
 

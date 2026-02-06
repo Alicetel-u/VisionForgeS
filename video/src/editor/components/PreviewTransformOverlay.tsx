@@ -37,27 +37,25 @@ export const PreviewTransformOverlay: React.FC<Props> = ({
     const imageRotation = block?.imageRotation ?? 0;
 
     // Calculate the actual video display area within the container
-    // The Player maintains aspect ratio, so we need to find where it renders
+    // Video is positioned at top-left, maintains aspect ratio, fits within container
     const containerAspect = containerWidth / containerHeight;
 
     let videoDisplayWidth: number;
     let videoDisplayHeight: number;
-    let videoOffsetX: number;
-    let videoOffsetY: number;
 
     if (containerAspect > VIDEO_ASPECT) {
         // Container is wider than video - video is height-constrained
         videoDisplayHeight = containerHeight;
         videoDisplayWidth = containerHeight * VIDEO_ASPECT;
-        videoOffsetX = (containerWidth - videoDisplayWidth) / 2;
-        videoOffsetY = 0;
     } else {
         // Container is taller than video - video is width-constrained
         videoDisplayWidth = containerWidth;
         videoDisplayHeight = containerWidth / VIDEO_ASPECT;
-        videoOffsetX = 0;
-        videoOffsetY = (containerHeight - videoDisplayHeight) / 2;
     }
+
+    // Video is positioned at top-left (0, 0)
+    const videoOffsetX = 0;
+    const videoOffsetY = 0;
 
     // Scale factor from video coordinates to display coordinates
     const scaleFactor = videoDisplayWidth / VIDEO_WIDTH;
@@ -223,14 +221,7 @@ export const PreviewTransformOverlay: React.FC<Props> = ({
                 <RotateCcw size={14} />
             </div>
 
-            {/* Reset Button */}
-            <button
-                className={styles.resetBtn}
-                onClick={handleReset}
-                title="リセット"
-            >
-                リセット
-            </button>
+
         </div>
     );
 };

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import { Player, PlayerRef } from '@remotion/player';
 import {
     Plus, Play, Pause, Grid3X3, MoreHorizontal,
-    Save, Trash2, CheckSquare, Square
+    Save, Trash2, CheckSquare, Square, RotateCcw
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import { CaptionBlock } from '../components/CaptionBlock';
@@ -24,9 +24,7 @@ export const MainLayout: React.FC = () => {
     const [currentTime, setCurrentTime] = React.useState(0);
     const [playbackRate, setPlaybackRate] = React.useState(1);
 
-    // Resizable pane state
-    const [previewWidth, setPreviewWidth] = React.useState(340);
-    const [isResizing, setIsResizing] = React.useState(false);
+
 
     // Video container dimensions for transform overlay
     const [videoContainerSize, setVideoContainerSize] = useState({ width: 0, height: 0 });
@@ -56,7 +54,7 @@ export const MainLayout: React.FC = () => {
             window.removeEventListener('resize', updateSize);
             observer.disconnect();
         };
-    }, [previewWidth]);
+    }, []);
 
     // Handle transform updates for active block
     const handleTransformUpdate = useCallback((updates: { imageX?: number; imageY?: number; imageScale?: number; imageRotation?: number }) => {
@@ -203,48 +201,12 @@ export const MainLayout: React.FC = () => {
         selectAll(!allSelected);
     };
 
-    // Resize handlers
-    const handleResizeStart = useCallback((e: React.MouseEvent) => {
-        e.preventDefault();
-        setIsResizing(true);
-    }, []);
 
-    const handleResizeMove = useCallback((e: MouseEvent) => {
-        if (!isResizing || !containerRef.current) return;
-
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const newWidth = e.clientX - containerRect.left;
-
-        // Clamp between min and max widths
-        const clampedWidth = Math.min(Math.max(newWidth, 250), 600);
-        setPreviewWidth(clampedWidth);
-    }, [isResizing]);
-
-    const handleResizeEnd = useCallback(() => {
-        setIsResizing(false);
-    }, []);
-
-    // Add mouse event listeners for resize
-    React.useEffect(() => {
-        if (isResizing) {
-            document.addEventListener('mousemove', handleResizeMove);
-            document.addEventListener('mouseup', handleResizeEnd);
-            document.body.style.cursor = 'col-resize';
-            document.body.style.userSelect = 'none';
-        }
-
-        return () => {
-            document.removeEventListener('mousemove', handleResizeMove);
-            document.removeEventListener('mouseup', handleResizeEnd);
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-        };
-    }, [isResizing, handleResizeMove, handleResizeEnd]);
 
     return (
         <div className={styles.container} ref={containerRef}>
             {/* Left Panel - Preview */}
-            <div className={styles.previewPane} style={{ width: previewWidth }}>
+            <div className={styles.previewPane}>
                 {/* Video Preview */}
                 <div className={styles.videoContainer} ref={videoContainerRef}>
                     <Player
@@ -255,8 +217,12 @@ export const MainLayout: React.FC = () => {
                         compositionWidth={1080}
                         compositionHeight={1920}
                         fps={fps}
-                        style={{ width: '100%', height: '100%' }}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                        }}
                     />
+
                     {/* Transform Overlay */}
                     {activeBlock?.image && (
                         <PreviewTransformOverlay
@@ -268,64 +234,61 @@ export const MainLayout: React.FC = () => {
                     )}
                 </div>
 
-                {/* Progress Bar */}
-                <div className={styles.progressContainer}>
-                    <div
-                        className={styles.progressBar}
-                        onClick={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const percent = (e.clientX - rect.left) / rect.width;
-                            const targetFrame = Math.floor(percent * durationInFrames);
-                            playerRef.current?.seekTo(targetFrame);
-                            setCurrentTime(targetFrame / fps);
-                        }}
-                    >
+                {/* Fixed Controls Bar - below video */}
+                <div className={styles.controlsBar}>
+                    {/* Progress Bar */}
+                    <div className={styles.progressContainer}>
                         <div
-                            className={styles.progressFill}
-                            style={{ width: `${(currentTime / totalDurationInSeconds) * 100}%` }}
-                        />
-                        <div
-                            className={styles.progressThumb}
-                            style={{ left: `${(currentTime / totalDurationInSeconds) * 100}%` }}
-                        />
-                    </div>
-                </div>
-
-                {/* Playback Controls */}
-                <div className={styles.playbackControls}>
-                    <button className={styles.playBtn} onClick={togglePlayback}>
-                        {isPlaying ? <Pause size={18} /> : <Play size={18} />}
-                    </button>
-
-                    <div className={styles.timeDisplay}>
-                        <span>{formatTime(currentTime)}</span>
-                        <span className={styles.timeSeparator}>/</span>
-                        <span>{formatTime(totalDurationInSeconds)}</span>
+                            className={styles.progressBar}
+                            onClick={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const percent = (e.clientX - rect.left) / rect.width;
+                                const targetFrame = Math.floor(percent * durationInFrames);
+                                playerRef.current?.seekTo(targetFrame);
+                                setCurrentTime(targetFrame / fps);
+                            }}
+                        >
+                            <div
+                                className={styles.progressFill}
+                                style={{ width: `${(currentTime / totalDurationInSeconds) * 100}%` }}
+                            />
+                            <div
+                                className={styles.progressThumb}
+                                style={{ left: `${(currentTime / totalDurationInSeconds) * 100}%` }}
+                            />
+                        </div>
                     </div>
 
-                    <div className={styles.controlsSpacer} />
+                    {/* Playback Controls */}
+                    <div className={styles.playbackControls}>
+                        <button className={styles.playBtn} onClick={togglePlayback}>
+                            {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                        </button>
 
-                    <button className={styles.controlBtn} onClick={changePlaybackRate}>
-                        {playbackRate}x
-                    </button>
-
-                    <button className={styles.controlBtn} title="グリッド">
-                        <Grid3X3 size={16} />
-                    </button>
-
-                    <button className={styles.controlBtn} title="その他">
-                        <MoreHorizontal size={16} />
-                    </button>
+                        <button
+                            className={styles.controlBtn}
+                            onClick={() => {
+                                if (activeBlock) {
+                                    updateBlock(activeBlock.id, {
+                                        imageX: 0,
+                                        imageY: 0,
+                                        imageScale: 1,
+                                        imageRotation: 0
+                                    });
+                                }
+                            }}
+                            title="画像位置をリセット"
+                            disabled={!activeBlock?.image}
+                            style={{ marginLeft: '12px' }}
+                        >
+                            <RotateCcw size={16} />
+                            <span style={{ marginLeft: '6px', fontSize: '0.8rem' }}>リセット</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Resizable Divider */}
-            <div
-                className={`${styles.resizer} ${isResizing ? styles.resizerActive : ''}`}
-                onMouseDown={handleResizeStart}
-            >
-                <div className={styles.resizerHandle} />
-            </div>
+
 
             {/* Right Panel - Editor */}
             <div className={styles.editorPane}>
