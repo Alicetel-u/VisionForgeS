@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile } from 'remotion';
+import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile, Audio } from 'remotion';
 import { EditorBlock } from '../../editor/types';
 
 interface Props {
@@ -21,6 +21,7 @@ export const EditorPreview: React.FC<Props> = ({ blocks }) => {
 
                 return (
                     <Sequence key={block.id} from={from} durationInFrames={durationInFrames}>
+                        {block.audio && <Audio src={staticFile(block.audio)} />}
                         <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center' }}>
 
                             {/* Background Image if exists */}

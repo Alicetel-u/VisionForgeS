@@ -3,174 +3,30 @@
     "id": 1,
     "speaker": "kanon",
     "text": "ついに明日、2月5日に「ドラクエ7」のリメイクが発売されるよ！",
-    "emotion": "happy",
+    "emotion": "normal",
     "action": "jump",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 5.94,
-    "emphasisWords": [
-      "明日",
-      "2月5日",
-      "ドラクエ7",
-      "リメイク",
-      "発売"
-    ],
-    "vfx": {
-      "flash": true,
-      "concentrationLines": true
-    },
-    "audio": "audio/t1.wav"
+    "audio": "audio/t1.wav",
+    "image": null,
+    "duration": 5.94
   },
   {
     "id": 2,
     "speaker": "zundamon",
     "text": "ドラクエ7！ あのシリーズ屈指の超大作がついに来るのだ！",
-    "emotion": "surprised",
+    "emotion": "normal",
     "action": "shiver",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 4.89,
-    "emphasisWords": [
-      "ドラクエ7",
-      "超大作"
-    ],
-    "vfx": {
-      "shake": 5,
-      "speedLines": true
-    },
-    "audio": "audio/t2.wav"
+    "audio": "audio/t2.wav",
+    "image": null,
+    "duration": 4.89
   },
   {
     "id": 3,
     "speaker": "kanon",
     "text": "PS5とSwitch2の性能をフルに使った、超美麗なグラフィックだよ。",
-    "emotion": "impressed",
+    "emotion": "normal",
     "action": "nod",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 5.37,
-    "emphasisWords": [
-      "PS5",
-      "Switch2",
-      "超美麗",
-      "グラフィック"
-    ],
-    "vfx": {
-      "colorOverlay": "rgba(255, 255, 0, 0.1)"
-    },
-    "audio": "audio/t3.wav"
-  },
-  {
-    "id": 4,
-    "speaker": "zundamon",
-    "text": "Switch2の4K画面で見る石版の世界… 想像しただけでワクワクするのだ！",
-    "emotion": "happy",
-    "action": "jump",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 6.31,
-    "emphasisWords": [
-      "Switch2",
-      "4K",
-      "石版",
-      "ワクワク"
-    ],
-    "vfx": {
-      "concentrationLines": true,
-      "shake": 2
-    },
-    "audio": "audio/t4.wav"
-  },
-  {
-    "id": 5,
-    "speaker": "kanon",
-    "text": "ロード時間も大幅短縮されて、快適に冒険できるみたいだね。",
-    "emotion": "happy",
-    "action": "nod",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 5.08,
-    "emphasisWords": [
-      "ロード時間",
-      "短縮",
-      "快適",
-      "冒険"
-    ],
-    "vfx": {
-      "speedLines": true,
-      "speedLinesDirection": "horizontal"
-    },
-    "audio": "audio/t5.wav"
-  },
-  {
-    "id": 6,
-    "speaker": "zundamon",
-    "text": "あのキーファとの別れも、高画質で拝めるのか… 涙が止まらないのだ。 ",
-    "emotion": "sad",
-    "action": "fall_down",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 5.92,
-    "emphasisWords": [
-      "キーファ",
-      "別れ",
-      "高画質",
-      "涙"
-    ],
-    "vfx": {
-      "colorOverlay": "rgba(0, 0, 100, 0.3)",
-      "vignette": true
-    },
-    "audio": "audio/t6.wav"
-  },
-  {
-    "id": 7,
-    "speaker": "kanon",
-    "text": "（それネタバレ…でも有名だもんね笑）とにかく最高の出来らしいよ！",
-    "emotion": "happy",
-    "action": "nod",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 5.46,
-    "emphasisWords": [
-      "ネタバレ",
-      "最高"
-    ],
-    "vfx": {
-      "shake": 1,
-      "flash": true
-    },
-    "audio": "audio/t7.wav"
-  },
-  {
-    "id": 8,
-    "speaker": "zundamon",
-    "text": "今夜は眠れないのだ！ 日付が変わった瞬間に石版を集め始めるのだ！",
-    "emotion": "panic",
-    "action": "run_right",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 5.86,
-    "emphasisWords": [
-      "眠れない",
-      "石版"
-    ],
-    "vfx": {
-      "speedLines": true,
-      "shake": 8,
-      "concentrationLines": true
-    },
-    "audio": "audio/t8.wav"
-  },
-  {
-    "id": 9,
-    "speaker": "kanon",
-    "text": "みんなも新時代のドラクエを楽しんでね！ それじゃ、またね！",
-    "emotion": "happy",
-    "action": "jump",
-    "bg_image": "images/bg_kanon_room.png",
-    "duration": 4.85,
-    "emphasisWords": [
-      "新時代",
-      "ドラクエ",
-      "楽しんで"
-    ],
-    "vfx": {
-      "flash": true,
-      "colorOverlay": "rgba(255, 200, 100, 0.1)"
-    },
-    "audio": "audio/t9.wav"
+    "audio": "audio/t3.wav",
+    "image": null,
+    "duration": 5.37
   }
 ]

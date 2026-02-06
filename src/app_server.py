@@ -1,7 +1,7 @@
-import os
 import json
 import requests
 import asyncio
+import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -140,7 +140,14 @@ async def save_script(data: ScriptUpdate):
             # テキストが変わっていたら音声を再生成
             if scene.id not in old_texts or scene.text != old_texts[scene.id]:
                 speaker_id = SPEAKER_IDS.get(scene.speaker, 10)
-                duration = generate_voice(scene.text, speaker_id, scene.audio, scene.speaker)
+                
+                # ファイル名がない場合は生成
+                if not scene.audio:
+                    scene_dict["audio"] = f"audio/{uuid.uuid4()}.wav"
+                    # ディレクトリ確認
+                    os.makedirs(os.path.join(PUBLIC_DIR, "audio"), exist_ok=True)
+                
+                duration = generate_voice(scene.text, speaker_id, scene_dict["audio"], scene.speaker)
                 scene_dict["duration"] = duration
             else:
                 # 変わっていなければ以前の再生時間を維持

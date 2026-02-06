@@ -78,7 +78,6 @@ export const MainLayout: React.FC = () => {
                         style={{ width: '100%', height: '100%' }}
                         controls
                         autoPlay
-                        loop
                     />
                 </div>
                 <div className={styles.previewInfo}>
