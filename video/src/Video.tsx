@@ -1,6 +1,7 @@
 import { Composition, staticFile } from 'remotion';
 import { HelloWorld } from './HelloWorld';
 import { ZundamonEmotionTest } from './ZundamonEmotionTest';
+import { EditorPreview } from './remotion/compositions/EditorPreview';
 import catDataRaw from '../public/cat_data.json';
 
 const threadData = catDataRaw as { id: number; duration?: number }[];
@@ -45,6 +46,24 @@ export const RemotionVideo: React.FC = () => {
                 width={1080}
                 height={1920}
                 defaultProps={{ isPreview: false }}
+            />
+            {/* エディタからのエクスポート用 */}
+            <Composition
+                id="EditorExport"
+                component={EditorPreview as React.ComponentType<any>}
+                durationInFrames={300}
+                fps={30}
+                width={1080}
+                height={1920}
+                defaultProps={{ blocks: [], imageSpans: [] }}
+                calculateMetadata={({ props }: { props: any }) => {
+                    const fps = 30;
+                    const blocks = props.blocks || [];
+                    const duration = blocks.reduce(
+                        (acc: number, b: any) => acc + Math.ceil((b.durationInSeconds || 2) * fps), 0
+                    );
+                    return { durationInFrames: Math.max(duration, fps) };
+                }}
             />
             <Composition
                 id="ZundamonEmotionTest"

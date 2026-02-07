@@ -3,10 +3,15 @@ import requests
 import asyncio
 import uuid
 import os
+import subprocess
+import base64
+import re
+import threading
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 
 app = FastAPI(title="VisionForge Studio Backend")
 
@@ -27,6 +32,16 @@ VOICEVOX_URL = "http://127.0.0.1:50021"
 SPEAKER_IDS = {
     "kanon": 10,
     "zundamon": 3
+}
+
+VIDEO_DIR = os.path.join(BASE_DIR, "video")
+OUTPUT_DIR = os.path.join(VIDEO_DIR, "out")
+
+# Render state management
+render_state: Dict[str, Any] = {
+    "status": "idle",  # idle | rendering | done | error
+    "progress": 0,
+    "error": None,
 }
 
 class Scene(BaseModel):
@@ -199,6 +214,176 @@ async def upload_image(file: UploadFile = File(...)):
     except Exception as e:
         print(f"Error uploading image: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================
+# Render API - 動画エクスポート
+# ============================================================
+
+class RenderRequest(BaseModel):
+    blocks: List[dict]
+    imageSpans: Optional[List[dict]] = []
+
+def extract_and_save_images(blocks: List[dict]) -> List[dict]:
+    """base64画像をファイルに保存し、パスに置換する"""
+    render_img_dir = os.path.join(PUBLIC_DIR, "images", "render")
+    os.makedirs(render_img_dir, exist_ok=True)
+
+    updated_blocks = []
+    for block in blocks:
+        block = dict(block)
+
+        # Handle legacy single image
+        if block.get("image") and block["image"].startswith("data:"):
+            filename = save_base64_image(block["image"], render_img_dir)
+            block["image"] = f"images/render/{filename}"
+
+        # Handle images array
+        if block.get("images"):
+            updated_images = []
+            for layer in block["images"]:
+                layer = dict(layer)
+                if layer.get("src") and layer["src"].startswith("data:"):
+                    filename = save_base64_image(layer["src"], render_img_dir)
+                    layer["src"] = f"images/render/{filename}"
+                updated_images.append(layer)
+            block["images"] = updated_images
+
+        updated_blocks.append(block)
+    return updated_blocks
+
+def save_base64_image(data_url: str, output_dir: str) -> str:
+    """data:URL からファイルに保存し、ファイル名を返す"""
+    match = re.match(r'data:image/(\w+);base64,(.+)', data_url, re.DOTALL)
+    if not match:
+        # fallback: assume png
+        img_data = data_url.split(",", 1)[-1] if "," in data_url else data_url
+        ext = "png"
+    else:
+        ext = match.group(1)
+        img_data = match.group(2)
+
+    if ext == "jpeg":
+        ext = "jpg"
+
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(output_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(base64.b64decode(img_data))
+    return filename
+
+def run_render(props_path: str, output_path: str):
+    """Remotion レンダリングをバックグラウンドで実行"""
+    global render_state
+    render_state = {"status": "rendering", "progress": 0, "error": None}
+
+    try:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        cmd = [
+            "npx", "remotion", "render",
+            "src/index.ts", "EditorExport",
+            output_path,
+            f"--props={props_path}",
+            "--log=verbose",
+        ]
+        print(f"[Render] Starting: {' '.join(cmd)}")
+
+        process = subprocess.Popen(
+            cmd,
+            cwd=VIDEO_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            shell=True,
+        )
+
+        for line in iter(process.stdout.readline, ""):
+            line = line.strip()
+            if not line:
+                continue
+            print(f"[Render] {line}")
+
+            # Parse progress from Remotion output (e.g., "Rendering frame 30/300 (10%)")
+            progress_match = re.search(r'(\d+)%', line)
+            if progress_match:
+                render_state["progress"] = int(progress_match.group(1))
+
+            # Also detect "x/y" frame patterns
+            frame_match = re.search(r'(\d+)/(\d+)', line)
+            if frame_match:
+                current = int(frame_match.group(1))
+                total = int(frame_match.group(2))
+                if total > 0:
+                    render_state["progress"] = min(99, int(current / total * 100))
+
+        process.wait()
+
+        if process.returncode == 0 and os.path.exists(output_path):
+            render_state = {"status": "done", "progress": 100, "error": None}
+            print(f"[Render] Complete: {output_path}")
+        else:
+            render_state = {
+                "status": "error",
+                "progress": render_state.get("progress", 0),
+                "error": f"Render failed with exit code {process.returncode}",
+            }
+            print(f"[Render] Failed with code {process.returncode}")
+
+    except Exception as e:
+        render_state = {"status": "error", "progress": 0, "error": str(e)}
+        print(f"[Render] Error: {e}")
+
+@app.post("/api/render")
+async def start_render(data: RenderRequest):
+    global render_state
+
+    if render_state.get("status") == "rendering":
+        raise HTTPException(status_code=409, detail="Render already in progress")
+
+    try:
+        # 1. Extract and save base64 images to files
+        updated_blocks = extract_and_save_images(data.blocks)
+
+        # 2. Save props JSON
+        props = {
+            "blocks": updated_blocks,
+            "imageSpans": data.imageSpans or [],
+        }
+        props_path = os.path.join(VIDEO_DIR, "render_props.json")
+        with open(props_path, "w", encoding="utf-8") as f:
+            json.dump(props, f, ensure_ascii=False)
+
+        # 3. Start render in background thread
+        output_path = os.path.join(OUTPUT_DIR, "export.mp4")
+        thread = threading.Thread(
+            target=run_render,
+            args=(props_path, output_path),
+            daemon=True,
+        )
+        thread.start()
+
+        return {"status": "started"}
+
+    except Exception as e:
+        print(f"[Render] Start error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/render/status")
+async def get_render_status():
+    return render_state
+
+@app.get("/api/render/download")
+async def download_render():
+    output_path = os.path.join(OUTPUT_DIR, "export.mp4")
+    if not os.path.exists(output_path):
+        raise HTTPException(status_code=404, detail="Export file not found")
+    return FileResponse(
+        output_path,
+        media_type="video/mp4",
+        filename="visionforge_export.mp4",
+    )
 
 if __name__ == "__main__":
     import uvicorn

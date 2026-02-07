@@ -1,4 +1,4 @@
-import { EditorBlock } from './types';
+import { EditorBlock, ImageSpan } from './types';
 
 const API_BASE = 'http://localhost:8000/api';
 
@@ -96,4 +96,39 @@ export const uploadImageAsBase64 = async (file: File): Promise<string> => {
         reader.onerror = reject;
         reader.readAsDataURL(file);
     });
+};
+
+// ============================================================
+// Render API - 動画エクスポート
+// ============================================================
+
+export interface RenderStatus {
+    status: 'idle' | 'rendering' | 'done' | 'error';
+    progress: number;
+    error?: string | null;
+}
+
+export const startRender = async (blocks: EditorBlock[], imageSpans: ImageSpan[]): Promise<void> => {
+    const response = await fetch(`${API_BASE}/render`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks, imageSpans }),
+    });
+
+    if (!response.ok) {
+        const err = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(err.detail || 'Failed to start render');
+    }
+};
+
+export const getRenderStatus = async (): Promise<RenderStatus> => {
+    const response = await fetch(`${API_BASE}/render/status`);
+    if (!response.ok) {
+        throw new Error('Failed to get render status');
+    }
+    return response.json();
+};
+
+export const getRenderDownloadUrl = (): string => {
+    return `${API_BASE}/render/download`;
 };

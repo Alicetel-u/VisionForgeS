@@ -3,7 +3,7 @@ import { Player, PlayerRef } from '@remotion/player';
 import {
     Plus, Play, Pause, Grid3X3, MoreHorizontal,
     Save, Trash2, CheckSquare, Square, RotateCcw,
-    AudioLines, Merge
+    AudioLines, Merge, Download, X
 } from 'lucide-react';
 import { useEditorStore } from '../store/editorStore';
 import { CaptionBlock } from '../components/CaptionBlock';
@@ -11,6 +11,7 @@ import { PreviewTransformOverlay } from '../components/PreviewTransformOverlay';
 import { ImageSpanOverlay } from '../components/ImageSpanOverlay';
 import { EditorPreview } from '../../remotion/compositions/EditorPreview';
 import { ImageLayer, getBlockImages } from '../types';
+import { startRender, getRenderStatus, getRenderDownloadUrl, RenderStatus } from '../api';
 import styles from './MainLayout.module.css';
 
 export const MainLayout: React.FC = () => {
@@ -37,8 +38,37 @@ export const MainLayout: React.FC = () => {
     // Video container dimensions for transform overlay
     const [videoContainerSize, setVideoContainerSize] = useState({ width: 0, height: 0 });
 
+    // Export state
+    const [renderStatus, setRenderStatus] = useState<RenderStatus>({ status: 'idle', progress: 0 });
+    const [showExportBar, setShowExportBar] = useState(false);
+
     const activeBlock = blocks.find(b => b.isSelected);
     const selectedCount = blocks.filter(b => b.isSelected).length;
+
+    // Handle export
+    const handleExport = useCallback(async () => {
+        try {
+            setShowExportBar(true);
+            setRenderStatus({ status: 'rendering', progress: 0 });
+            await startRender(blocks, imageSpans);
+
+            // Poll for status
+            const pollInterval = setInterval(async () => {
+                try {
+                    const status = await getRenderStatus();
+                    setRenderStatus(status);
+                    if (status.status === 'done' || status.status === 'error') {
+                        clearInterval(pollInterval);
+                    }
+                } catch {
+                    clearInterval(pollInterval);
+                    setRenderStatus({ status: 'error', progress: 0, error: 'Connection lost' });
+                }
+            }, 1000);
+        } catch (e: any) {
+            setRenderStatus({ status: 'error', progress: 0, error: e.message });
+        }
+    }, [blocks, imageSpans]);
 
     // Track video container size
     useEffect(() => {
@@ -258,6 +288,106 @@ export const MainLayout: React.FC = () => {
 
 
 
+    // Recording state
+    const [isRecording, setIsRecording] = useState(false);
+    const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+    const chunksRef = React.useRef<Blob[]>([]);
+
+    const handleStartRecording = async () => {
+        try {
+            // @ts-ignore - preferCurrentTab is experimental
+            const stream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    displaySurface: 'browser',
+                },
+                // @ts-ignore - suppressLocalAudioPlayback is experimental
+                audio: {
+                    suppressLocalAudioPlayback: false, // Try to capture system audio
+                },
+                preferCurrentTab: true,
+                selfBrowserSurface: 'include',
+                systemAudio: 'include',
+            });
+
+            const track = stream.getVideoTracks()[0];
+
+            // Region Capture API to crop to the preview container
+            // @ts-ignore - window.CropTarget is experimental
+            if (window.CropTarget && videoContainerRef.current) {
+                try {
+                    // @ts-ignore
+                    const cropTarget = await window.CropTarget.fromElement(videoContainerRef.current);
+                    // @ts-ignore
+                    await track.cropTo(cropTarget);
+                } catch (e) {
+                    console.warn("Region Capture failed", e);
+                }
+            }
+
+            const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            mediaRecorderRef.current = recorder;
+            chunksRef.current = [];
+
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunksRef.current.push(e.data);
+            };
+
+            recorder.onstop = () => {
+                const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `visionforge-preview-${new Date().getTime()}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+                setIsRecording(false);
+
+                // Stop all tracks
+                stream.getTracks().forEach(track => track.stop());
+
+                // Pause player
+                if (playerRef.current) {
+                    playerRef.current.pause();
+                    setIsPlaying(false);
+                }
+            };
+
+            recorder.start();
+            setIsRecording(true);
+
+            // Start playback from beginning
+            if (playerRef.current) {
+                playerRef.current.seekTo(0);
+                // Seek takes a moment, wait briefly before playing
+                requestAnimationFrame(() => {
+                    playerRef.current?.play();
+                    setIsPlaying(true);
+                });
+            }
+
+        } catch (err) {
+            console.error("Recording cancelled or failed", err);
+            setIsRecording(false);
+        }
+    };
+
+    const handleStopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+        }
+    };
+
+    // Auto-stop recording when video ends
+    React.useEffect(() => {
+        if (isRecording && totalDurationInSeconds > 0) {
+            // Stop slightly before the absolute end to ensure we catch it
+            // before any potential loop or stop state reset
+            if (currentTime >= totalDurationInSeconds - 0.2) {
+                handleStopRecording();
+            }
+        }
+    }, [currentTime, isRecording, totalDurationInSeconds]);
+
     return (
         <div className={styles.container} ref={containerRef}>
             {/* Left Panel - Preview */}
@@ -272,6 +402,7 @@ export const MainLayout: React.FC = () => {
                         compositionWidth={1080}
                         compositionHeight={1920}
                         fps={fps}
+                        loop={false}
                         style={{
                             width: '100%',
                             height: '100%',
@@ -279,13 +410,15 @@ export const MainLayout: React.FC = () => {
                     />
 
                     {/* Transform Overlay for multi-image support */}
-                    <PreviewTransformOverlay
-                        block={activeBlock}
-                        onUpdateImage={handleUpdateImage}
-                        onSelectImage={handleSelectImage}
-                        containerWidth={videoContainerSize.width}
-                        containerHeight={videoContainerSize.height}
-                    />
+                    {!isRecording && (
+                        <PreviewTransformOverlay
+                            block={activeBlock}
+                            onUpdateImage={handleUpdateImage}
+                            onSelectImage={handleSelectImage}
+                            containerWidth={videoContainerSize.width}
+                            containerHeight={videoContainerSize.height}
+                        />
+                    )}
                 </div>
 
                 {/* Fixed Controls Bar - below video */}
@@ -377,11 +510,34 @@ export const MainLayout: React.FC = () => {
                         <span className={styles.version}>v{__APP_VERSION__}</span>
                     </h1>
                     <div style={{ display: 'flex', gap: '10px' }}>
+                        {isRecording ? (
+                            <button
+                                className={styles.saveBtn}
+                                onClick={handleStopRecording}
+                                style={{ backgroundColor: '#ef4444', border: '1px solid #dc2626', animation: 'pulse 2s infinite' }}
+                                title="録画を停止して保存"
+                            >
+                                <Square size={16} fill="white" />
+                                停止
+                            </button>
+                        ) : (
+                            <button
+                                className={styles.saveBtn}
+                                onClick={handleStartRecording}
+                                disabled={isLoading}
+                                style={{ backgroundColor: '#2dd4bf', border: '1px solid #14b8a6', filter: 'hue-rotate(290deg)' }} // Pinkish/Reddish
+                                title="プレビュー画面を録画して動画ファイルとして保存します（擬似エクスポート）"
+                            >
+                                <div style={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: 'white', marginRight: 6 }} />
+                                画面録画
+                            </button>
+                        )}
+
                         <button
                             className={styles.saveBtn}
                             onClick={() => loadScript()}
                             disabled={isLoading}
-                            style={{ backgroundColor: '#2dd4bf', border: '1px solid #14b8a6', filter: 'hue-rotate(180deg)' }} // Distinct color (orange-ish due to hue rotate or just custom color)
+                            style={{ backgroundColor: '#2dd4bf', border: '1px solid #14b8a6', filter: 'hue-rotate(180deg)', marginLeft: '10px' }} // Distinct color
                             title="サーバー上のファイルを強制的に再読み込みします"
                         >
                             <RotateCcw size={16} />
@@ -406,8 +562,64 @@ export const MainLayout: React.FC = () => {
                             <AudioLines size={16} />
                             全音声生成
                         </button>
+                        <button
+                            className={styles.saveBtn}
+                            onClick={handleExport}
+                            disabled={isLoading || renderStatus.status === 'rendering'}
+                            style={{ backgroundColor: '#7c3aed', border: '1px solid #6d28d9' }}
+                            title="MP4動画としてエクスポートします"
+                        >
+                            <Download size={16} />
+                            エクスポート
+                        </button>
                     </div>
                 </header>
+
+                {/* Export Progress Bar */}
+                {showExportBar && (
+                    <div className={styles.exportBar}>
+                        <div className={styles.exportInfo}>
+                            {renderStatus.status === 'rendering' && (
+                                <>
+                                    <span className={styles.exportSpinner} />
+                                    <span>エクスポート中... {renderStatus.progress}%</span>
+                                </>
+                            )}
+                            {renderStatus.status === 'done' && (
+                                <>
+                                    <span style={{ color: '#4ade80' }}>完了!</span>
+                                    <a
+                                        href={getRenderDownloadUrl()}
+                                        className={styles.exportDownloadBtn}
+                                        download
+                                    >
+                                        <Download size={14} />
+                                        ダウンロード
+                                    </a>
+                                </>
+                            )}
+                            {renderStatus.status === 'error' && (
+                                <span style={{ color: '#f87171' }}>
+                                    エラー: {renderStatus.error || '不明なエラー'}
+                                </span>
+                            )}
+                        </div>
+                        <button
+                            className={styles.exportCloseBtn}
+                            onClick={() => setShowExportBar(false)}
+                        >
+                            <X size={14} />
+                        </button>
+                        {renderStatus.status === 'rendering' && (
+                            <div className={styles.exportProgressTrack}>
+                                <div
+                                    className={styles.exportProgressFill}
+                                    style={{ width: `${renderStatus.progress}%` }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Selection Toolbar */}
                 <div className={styles.toolbar}>

@@ -370,3 +370,86 @@
     border-color: #00bcd4;
     color: #00bcd4;
 }
+
+/* Export Progress Bar */
+.exportBar {
+    background: #1a1a2e;
+    border-bottom: 1px solid #333;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: relative;
+}
+
+.exportInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    flex: 1;
+}
+
+.exportSpinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #7c3aed44;
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.exportDownloadBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: #7c3aed;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.exportDownloadBtn:hover {
+    background: #6d28d9;
+}
+
+.exportCloseBtn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.exportCloseBtn:hover {
+    background: #333;
+    color: #fff;
+}
+
+.exportProgressTrack {
+    width: 100%;
+    height: 3px;
+    background: #333;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.exportProgressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #a78bfa);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
