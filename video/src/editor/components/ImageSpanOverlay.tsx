@@ -190,25 +190,32 @@ export const ImageSpanOverlay: React.FC<Props> = ({ blocks, imageSpans, blockLis
     // Render
     if (blockPositions.size === 0) return null;
 
-    // Collect blocks that have images (and no active span for that image)
+    // Collect indicators: only for the selected image in each block (or the only image if just one)
     const indicators: { blockId: string; imageLayerId: string; centerY: number }[] = [];
     blocks.forEach(block => {
         const images = getBlockImages(block);
-        images.forEach(img => {
+        if (images.length === 0) return;
+
+        // Determine which image to show indicator for
+        const targetImage = images.length === 1
+            ? images[0]
+            : images.find(img => img.id === block.selectedImageId) || null;
+
+        if (targetImage) {
             const hasSpan = imageSpans.some(
-                s => s.sourceBlockId === block.id && s.imageLayerId === img.id
+                s => s.sourceBlockId === block.id && s.imageLayerId === targetImage.id
             );
             if (!hasSpan) {
                 const pos = blockPositions.get(block.id);
                 if (pos) {
                     indicators.push({
                         blockId: block.id,
-                        imageLayerId: img.id,
+                        imageLayerId: targetImage.id,
                         centerY: pos.centerY,
                     });
                 }
             }
-        });
+        }
     });
 
     // Compute span bar positions
@@ -220,6 +227,15 @@ export const ImageSpanOverlay: React.FC<Props> = ({ blocks, imageSpans, blockLis
     }[] = [];
 
     imageSpans.forEach(span => {
+        // Only show span bar if the source block's selected image matches (or block has only 1 image)
+        const sourceBlock = blocks.find(b => b.id === span.sourceBlockId);
+        if (sourceBlock) {
+            const images = getBlockImages(sourceBlock);
+            if (images.length > 1 && sourceBlock.selectedImageId && sourceBlock.selectedImageId !== span.imageLayerId) {
+                return; // Different image selected, hide this span bar
+            }
+        }
+
         const sourcePos = blockPositions.get(span.sourceBlockId);
         const endPos = blockPositions.get(span.endBlockId);
         if (sourcePos && endPos) {

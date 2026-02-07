@@ -93,6 +93,7 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
         if (currentImages.length === 0) {
             updateBlock(block.id, {
                 images: [newImage],
+                selectedImageId: newImage.id,
                 image: undefined, // Clear legacy field
                 imageX: undefined,
                 imageY: undefined,
@@ -111,6 +112,7 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
             }));
             updateBlock(block.id, {
                 images: [...existingImages, newImage],
+                selectedImageId: newImage.id,
                 image: undefined,
                 imageX: undefined,
                 imageY: undefined,
@@ -294,9 +296,15 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
                         {currentImages.map((img, imgIndex) => (
                             <div
                                 key={img.id}
-                                className={styles.thumbnail}
+                                className={`${styles.thumbnail} ${block.selectedImageId === img.id ? styles.thumbnailSelected : ''}`}
                                 style={{ backgroundImage: `url(${img.src})` }}
-                                title={`画像 ${imgIndex + 1}`}
+                                title={`画像 ${imgIndex + 1}${block.selectedImageId === img.id ? ' (選択中)' : ' - クリックで選択'}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateBlock(block.id, {
+                                        selectedImageId: block.selectedImageId === img.id ? undefined : img.id
+                                    });
+                                }}
                             >
                                 <button
                                     className={styles.thumbnailRemove}

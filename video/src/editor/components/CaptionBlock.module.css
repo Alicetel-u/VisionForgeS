@@ -203,6 +203,11 @@
     border-color: #00bcd4;
 }
 
+.thumbnailSelected {
+    border-color: #00bcd4;
+    box-shadow: 0 0 0 1px #00bcd4;
+}
+
 .thumbnailAdd {
     border-style: dashed;
 }
