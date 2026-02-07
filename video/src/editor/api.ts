@@ -20,7 +20,7 @@ export const fetchScript = async (): Promise<EditorBlock[]> => {
     }));
 };
 
-export const saveScript = async (blocks: EditorBlock[], generateAudio: boolean = true) => {
+export const saveScript = async (blocks: EditorBlock[], generateAudio: boolean = true, speedScale: number = 1.0) => {
     // Transform EditorBlock back to backend format
     const scenes = blocks.map((block, index) => ({
         id: parseInt(block.id) || Date.now() + index,
@@ -33,7 +33,7 @@ export const saveScript = async (blocks: EditorBlock[], generateAudio: boolean =
         duration: block.durationInSeconds
     }));
 
-    const response = await fetch(`${API_BASE}/save?generate_audio=${generateAudio}`, {
+    const response = await fetch(`${API_BASE}/save?generate_audio=${generateAudio}&speed_scale=${speedScale}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

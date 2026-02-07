@@ -371,6 +371,45 @@
     color: #00bcd4;
 }
 
+/* Speech Speed Selector */
+.speedSelector {
+    display: flex;
+    border: 1px solid #444;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.speedBtn {
+    background: transparent;
+    border: none;
+    border-right: 1px solid #444;
+    color: #888;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.speedBtn:last-child {
+    border-right: none;
+}
+
+.speedBtn:hover {
+    background: #333;
+    color: #fff;
+}
+
+.speedBtnActive {
+    background: rgba(0, 188, 212, 0.2);
+    color: #00bcd4;
+}
+
+.speedBtnActive:hover {
+    background: rgba(0, 188, 212, 0.3);
+    color: #00bcd4;
+}
+
 /* Export Progress Bar */
 .exportBar {
     background: #1a1a2e;

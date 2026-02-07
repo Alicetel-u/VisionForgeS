@@ -76,7 +76,9 @@ const completedSaves = new Set<string>();
 interface EditorState {
     blocks: EditorBlock[];
     imageSpans: ImageSpan[];
+    speechSpeed: number;
     isLoading: boolean;
+    setSpeechSpeed: (speed: number) => void;
     addBlock: (text?: string) => void;
     insertBlockAfter: (afterId: string, text?: string) => void;
     duplicateBlock: (id: string) => void;
@@ -107,7 +109,10 @@ export const useEditorStore = create<EditorState>()(
             (set, get) => ({
                 blocks: [],
                 imageSpans: [],
+                speechSpeed: 1.5,
                 isLoading: false,
+
+                setSpeechSpeed: (speed: number) => set({ speechSpeed: speed }),
 
                 addBlock: (text = '') =>
                     set((state) => ({
@@ -393,8 +398,8 @@ export const useEditorStore = create<EditorState>()(
                 generateAllAudio: async () => {
                     set({ isLoading: true });
                     try {
-                        const { blocks } = get();
-                        await saveScript(blocks, true);
+                        const { blocks, speechSpeed } = get();
+                        await saveScript(blocks, true, speechSpeed);
                         const updatedBlocks = await fetchScript();
                         set({ blocks: updatedBlocks });
                     } catch (e) {
@@ -408,12 +413,12 @@ export const useEditorStore = create<EditorState>()(
                 generateAudioForBlock: async (id: string) => {
                     set({ isLoading: true });
                     try {
-                        const { blocks } = get();
+                        const { blocks, speechSpeed } = get();
                         // Clear audio for the target block to force regeneration
                         const blocksToSave = blocks.map(b =>
                             b.id === id ? { ...b, audio: undefined } : b
                         );
-                        await saveScript(blocksToSave, true);
+                        await saveScript(blocksToSave, true, speechSpeed);
                         const updatedBlocks = await fetchScript();
                         set({ blocks: updatedBlocks });
                     } catch (e) {
@@ -427,12 +432,12 @@ export const useEditorStore = create<EditorState>()(
                 generateAudioForSelected: async () => {
                     set({ isLoading: true });
                     try {
-                        const { blocks } = get();
+                        const { blocks, speechSpeed } = get();
                         // Clear audio for selected blocks to force regeneration
                         const blocksToSave = blocks.map(b =>
                             b.isSelected ? { ...b, audio: undefined } : b
                         );
-                        await saveScript(blocksToSave, true);
+                        await saveScript(blocksToSave, true, speechSpeed);
                         const updatedBlocks = await fetchScript();
                         set({ blocks: updatedBlocks });
                     } catch (e) {
@@ -537,6 +542,7 @@ export const useEditorStore = create<EditorState>()(
             // Exclude Base64 images from localStorage to avoid quota issues
             partialize: (state) => {
                 const result = {
+                    speechSpeed: state.speechSpeed,
                     blocks: state.blocks.map(block => {
                         let updatedBlock = { ...block };
 

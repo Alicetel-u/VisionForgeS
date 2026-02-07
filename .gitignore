@@ -12,6 +12,10 @@ venv/
 outputs/
 video/out/
 
+# Audio files
+*.wav
+*.mp3
+
 # Python
 __pycache__/
 *.py[cod]

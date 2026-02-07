@@ -30,8 +30,9 @@ PUBLIC_DIR = os.path.join(BASE_DIR, "video", "public")
 VOICEVOX_URL = "http://127.0.0.1:50021"
 
 SPEAKER_IDS = {
-    "kanon": 10,
-    "zundamon": 3
+    "metan": 2,
+    "zunda": 3,
+    "kanon": 10
 }
 
 VIDEO_DIR = os.path.join(BASE_DIR, "video")
@@ -70,21 +71,24 @@ def get_audio_duration(file_path):
     except:
         return 5.0
 
-def generate_voice(text, speaker_id, filename, speaker_name="kanon"):
-    print(f"🎤 音声生成中 ({speaker_name}): {text[:10]}...")
+def generate_voice(text, speaker_id, filename, speaker_name="kanon", speed_scale=1.0):
+    print(f"🎤 音声生成中 ({speaker_name}, speed={speed_scale}): {text[:10]}...")
     try:
         # クエリ作成
         res1 = requests.post(f"{VOICEVOX_URL}/audio_query", params={"text": text, "speaker": speaker_id})
         query = res1.json()
-        
+
         # --- 流暢さの調整 ---
         if speaker_name == "kanon":
-            query["speedScale"] = 1.15       # ハキハキと速めに
+            base_speed = 1.15       # ハキハキと速めに
             query["intonationScale"] = 1.2   # 抑揚を豊かに
             query["prePhonemeLength"] = 0.1  # 文頭の無音を詰める
         else:
-            query["speedScale"] = 0.95       # ずんだもんは可愛くゆっくりめ
+            base_speed = 0.95       # ずんだもんは可愛くゆっくりめ
             query["intonationScale"] = 1.0
+
+        # ユーザー指定の速度倍率を適用
+        query["speedScale"] = base_speed * speed_scale
         
         # 音声合成
         res2 = requests.post(f"{VOICEVOX_URL}/synthesis", params={"speaker": speaker_id}, json=query)
@@ -135,7 +139,7 @@ async def get_script():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/save")
-async def save_script(data: ScriptUpdate, generate_audio: bool = True):
+async def save_script(data: ScriptUpdate, generate_audio: bool = True, speed_scale: float = 1.0):
     try:
         # 1. 既存のデータと比較して、テキストが変わったシーンだけ音声を再生成
         old_data = []
@@ -168,7 +172,7 @@ async def save_script(data: ScriptUpdate, generate_audio: bool = True):
 
             if generate_audio and (needs_update or not file_exists):
                 speaker_id = SPEAKER_IDS.get(scene.speaker, 10)
-                duration = generate_voice(scene.text, speaker_id, scene_dict["audio"], scene.speaker)
+                duration = generate_voice(scene.text, speaker_id, scene_dict["audio"], scene.speaker, speed_scale)
                 scene_dict["duration"] = duration
             elif not generate_audio and needs_update:
                  # 音声生成せず保存だけする場合でも、durationは仮で維持するか更新しない

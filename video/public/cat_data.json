@@ -1,72 +1,172 @@
 [
   {
     "id": 1,
-    "speaker": "zundamon",
-    "text": "【簡単無限引き直し】\nサクナヒメガチャリセマラのやり方",
+    "speaker": "metan",
+    "text": "【簡単無限引き直し】\nサクナヒメガチャ\nリセマラのやり方",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/9a035a6d-2fba-4ae5-827a-1e7adae51371.wav",
+    "audio": "audio/4c34a89e-f77e-400b-9800-b5ae84835674.wav",
     "image": null,
-    "duration": 5.281333333333333
+    "duration": 3.361333333333333
   },
   {
-    "id": 3,
-    "speaker": "zundamon",
+    "id": 2,
+    "speaker": "metan",
     "text": "チュートリアルは\nスキップできるので",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_3.wav",
+    "audio": "audio/6c40548f-2610-4acf-ac0c-2f0f8eba84fa.wav",
     "image": null,
-    "duration": 2.9346666666666663
+    "duration": 1.9000000000000001
   },
   {
-    "id": 4,
-    "speaker": "zundamon",
+    "id": 3,
+    "speaker": "metan",
     "text": "リセマラに入るまでが\nちょー簡単",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_4.wav",
+    "audio": "audio/26527516-8beb-48b8-92f1-b98373ea82de.wav",
     "image": null,
-    "duration": 2.988
+    "duration": 1.9746666666666668
+  },
+  {
+    "id": 4,
+    "speaker": "metan",
+    "text": "狙うは心想神画と\n言う名の星3装備",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/498b56a2-efc5-4d8f-a927-ae16b56f80cd.wav",
+    "image": null,
+    "duration": 2.497333333333333
   },
   {
     "id": 5,
-    "speaker": "zundamon",
-    "text": "狙うは心想神画と言う名の星3装備",
+    "speaker": "metan",
+    "text": "すぐに引き直し\nガチャが引けるので",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_5.wav",
+    "audio": "audio/dcc70091-e802-419f-924d-aa4a05ed5554.wav",
     "image": null,
-    "duration": 3.905333333333333
+    "duration": 1.964
   },
   {
     "id": 6,
-    "speaker": "zundamon",
-    "text": "すぐに引き直しガチャが引けるので",
+    "speaker": "metan",
+    "text": "最低星3を\n２枚以上引くのが\n目標",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_6.wav",
+    "audio": "audio/0bfa99a9-cbf7-4777-8e1e-829262c01b00.wav",
     "image": null,
-    "duration": 3.0519999999999996
+    "duration": 2.476
   },
   {
-    "id": 18,
-    "speaker": "zundamon",
+    "id": 7,
+    "speaker": "metan",
+    "text": "その後の配布で\nガチャで\n１枚以上引いて",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/9ca1dfb4-c53f-49df-9007-e06f45aaa1f6.wav",
+    "image": null,
+    "duration": 2.3906666666666663
+  },
+  {
+    "id": 8,
+    "speaker": "metan",
+    "text": "合計３枚以上に\nなれば終了で\nよいかな",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/1dcdc26c-4198-4d7f-88b3-b2eebffc7761.wav",
+    "image": null,
+    "duration": 2.497333333333333
+  },
+  {
+    "id": 9,
+    "speaker": "metan",
+    "text": "引き直しはちゃんと\n確率通りの\n出来レース無しなので",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/a69e577c-83b2-445d-ac13-baad734c4ed6.wav",
+    "image": null,
+    "duration": 2.881333333333333
+  },
+  {
+    "id": 10,
+    "speaker": "metan",
+    "text": "４枚抜きとかも\nあり得る",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/eeb5b244-75ee-404f-a06e-f9dc6f5e571e.wav",
+    "image": null,
+    "duration": 1.58
+  },
+  {
+    "id": 11,
+    "speaker": "metan",
+    "text": "時間が許す限り\nやるが良い",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/40df5494-7ec7-4c2f-a60e-8247dcadb6ab.wav",
+    "image": null,
+    "duration": 1.8466666666666667
+  },
+  {
+    "id": 12,
+    "speaker": "metan",
+    "text": "名前は30日\n変えられない",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/e1fd70ba-2481-4953-8fd1-0d36b2295893.wav",
+    "image": null,
+    "duration": 1.8893333333333333
+  },
+  {
+    "id": 13,
+    "speaker": "metan",
+    "text": "引き直しガチャ\nひたすら\nやるだけなので",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/7b498cf0-5066-45f6-a1e3-4e2ab7bd33b2.wav",
+    "image": null,
+    "duration": 2.0813333333333333
+  },
+  {
+    "id": 14,
+    "speaker": "metan",
+    "text": "スマホ2台で\nリセマラすれば\n効率よし",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/66c97325-b65d-48f9-bc0f-071c245f7c91.wav",
+    "image": null,
+    "duration": 2.369333333333333
+  },
+  {
+    "id": 15,
+    "speaker": "metan",
+    "text": "IDとパスワードで\n引き継ぎできるので\n簡単",
+    "emotion": "normal",
+    "action": "none",
+    "audio": "audio/81a96d0d-ebdb-4ae1-9e52-382913cceca1.wav",
+    "image": null,
+    "duration": 2.5506666666666664
+  },
+  {
+    "id": 16,
+    "speaker": "metan",
     "text": "参考になりましたら\nコメントと",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_18.wav",
+    "audio": "audio/7ecb78b4-1d75-4633-9f24-a50bde1ee3ee.wav",
     "image": null,
-    "duration": 2.988
+    "duration": 1.9000000000000001
   },
   {
-    "id": 19,
-    "speaker": "zundamon",
+    "id": 17,
+    "speaker": "metan",
     "text": "チャンネル登録\n宜しくお願いします",
     "emotion": "normal",
     "action": "none",
-    "audio": "audio/scene_19.wav",
+    "audio": "audio/332f3e35-08d8-4e2a-aff9-1e2ac17f34f5.wav",
     "image": null,
-    "duration": 3.308
+    "duration": 2.092
   }
 ]

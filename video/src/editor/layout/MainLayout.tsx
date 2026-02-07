@@ -16,9 +16,9 @@ import styles from './MainLayout.module.css';
 
 export const MainLayout: React.FC = () => {
     const {
-        blocks, imageSpans, addBlock, saveOnly, generateAllAudio, isLoading,
+        blocks, imageSpans, speechSpeed, addBlock, saveOnly, generateAllAudio, isLoading,
         selectAll, updateBlock, removeSelected, getSelectedCount,
-        loadScript, canMergeSelected, mergeSelected, generateAudioForSelected
+        loadScript, canMergeSelected, mergeSelected, generateAudioForSelected, setSpeechSpeed
     } = useEditorStore();
 
     // ...
@@ -303,9 +303,12 @@ export const MainLayout: React.FC = () => {
                 // @ts-ignore - suppressLocalAudioPlayback is experimental
                 audio: {
                     suppressLocalAudioPlayback: false, // Try to capture system audio
-                },
+                } as any,
+                // @ts-ignore - experimental properties
                 preferCurrentTab: true,
+                // @ts-ignore
                 selfBrowserSurface: 'include',
+                // @ts-ignore
                 systemAudio: 'include',
             });
 
@@ -562,6 +565,18 @@ export const MainLayout: React.FC = () => {
                             <AudioLines size={16} />
                             全音声生成
                         </button>
+                        <div className={styles.speedSelector}>
+                            {[1.0, 1.25, 1.5].map(speed => (
+                                <button
+                                    key={speed}
+                                    className={`${styles.speedBtn} ${speechSpeed === speed ? styles.speedBtnActive : ''}`}
+                                    onClick={() => setSpeechSpeed(speed)}
+                                    title={`音声速度を${speed}倍に設定`}
+                                >
+                                    {speed}x
+                                </button>
+                            ))}
+                        </div>
                         <button
                             className={styles.saveBtn}
                             onClick={handleExport}
