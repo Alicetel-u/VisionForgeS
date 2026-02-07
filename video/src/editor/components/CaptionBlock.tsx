@@ -65,7 +65,7 @@ const tokenizeText = (text: string): string[] => {
 };
 
 export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay }) => {
-    const { updateBlock, removeBlock, duplicateBlock } = useEditorStore();
+    const { updateBlock, removeBlock, duplicateBlock, removeSpansForImage } = useEditorStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = React.useState(false);
     const [isEditing, setIsEditing] = React.useState(false);
@@ -122,6 +122,7 @@ export const CaptionBlock: React.FC<Props> = ({ block, index, onFocus, onPlay })
 
     // Remove image from block
     const removeImageFromBlock = (imageId: string) => {
+        removeSpansForImage(block.id, imageId);
         const updatedImages = currentImages.filter(img => img.id !== imageId);
         if (imageId === 'legacy-image') {
             updateBlock(block.id, {

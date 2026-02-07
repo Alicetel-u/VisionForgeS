@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
-import { EditorBlock } from '../types';
+import { EditorBlock, ImageSpan } from '../types';
 import { fetchScript, saveScript } from '../api';
 import { saveImage, getImage, deleteImage, isBase64DataUrl, generateImageId } from './imageStorage';
 
@@ -75,6 +75,7 @@ const completedSaves = new Set<string>();
 
 interface EditorState {
     blocks: EditorBlock[];
+    imageSpans: ImageSpan[];
     isLoading: boolean;
     addBlock: (text?: string) => void;
     insertBlockAfter: (afterId: string, text?: string) => void;
@@ -88,6 +89,10 @@ interface EditorState {
     getSelectedCount: () => number;
     canMergeSelected: () => boolean;
     mergeSelected: () => void;
+    addImageSpan: (sourceBlockId: string, imageLayerId: string, endBlockId: string) => void;
+    updateImageSpan: (spanId: string, endBlockId: string) => void;
+    removeImageSpan: (spanId: string) => void;
+    removeSpansForImage: (blockId: string, imageLayerId: string) => void;
     loadScript: () => Promise<void>;
     saveOnly: () => Promise<void>;
     generateAllAudio: () => Promise<void>;
@@ -101,6 +106,7 @@ export const useEditorStore = create<EditorState>()(
         temporal(
             (set, get) => ({
                 blocks: [],
+                imageSpans: [],
                 isLoading: false,
 
                 addBlock: (text = '') =>
@@ -201,21 +207,50 @@ export const useEditorStore = create<EditorState>()(
                 },
 
                 removeBlock: (id) =>
-                    set((state) => ({
-                        blocks: state.blocks.filter((b) => b.id !== id),
-                    })),
+                    set((state) => {
+                        const newBlocks = state.blocks.filter((b) => b.id !== id);
+                        const newSpans = state.imageSpans
+                            .filter(span => span.sourceBlockId !== id)
+                            .map(span => {
+                                if (span.endBlockId === id) {
+                                    // Shrink span: find the block just before the deleted one
+                                    const oldIndex = state.blocks.findIndex(b => b.id === id);
+                                    const sourceIndex = state.blocks.findIndex(b => b.id === span.sourceBlockId);
+                                    if (oldIndex <= sourceIndex + 1) return null; // Would collapse
+                                    const prevBlock = state.blocks[oldIndex - 1];
+                                    if (prevBlock && prevBlock.id !== span.sourceBlockId) {
+                                        return { ...span, endBlockId: prevBlock.id };
+                                    }
+                                    return null;
+                                }
+                                return span;
+                            })
+                            .filter((s): s is ImageSpan => s !== null);
+                        return { blocks: newBlocks, imageSpans: newSpans };
+                    }),
 
                 removeSelected: () =>
-                    set((state) => ({
-                        blocks: state.blocks.filter((b) => !b.isSelected),
-                    })),
+                    set((state) => {
+                        const removedIds = new Set(state.blocks.filter(b => b.isSelected).map(b => b.id));
+                        const newBlocks = state.blocks.filter((b) => !b.isSelected);
+                        const newSpans = state.imageSpans.filter(span =>
+                            !removedIds.has(span.sourceBlockId) && !removedIds.has(span.endBlockId)
+                        );
+                        return { blocks: newBlocks, imageSpans: newSpans };
+                    }),
 
                 reorderBlocks: (fromIndex, toIndex) =>
                     set((state) => {
                         const newBlocks = [...state.blocks];
                         const [moved] = newBlocks.splice(fromIndex, 1);
                         newBlocks.splice(toIndex, 0, moved);
-                        return { blocks: newBlocks };
+                        // Validate spans after reorder
+                        const validSpans = state.imageSpans.filter(span => {
+                            const sIdx = newBlocks.findIndex(b => b.id === span.sourceBlockId);
+                            const eIdx = newBlocks.findIndex(b => b.id === span.endBlockId);
+                            return sIdx !== -1 && eIdx !== -1 && eIdx > sIdx;
+                        });
+                        return { blocks: newBlocks, imageSpans: validSpans };
                     }),
 
                 toggleSelection: (id) =>
@@ -287,15 +322,49 @@ export const useEditorStore = create<EditorState>()(
                     const newBlocks = blocks.filter((_, i) => !selectedIndices.includes(i));
                     newBlocks.splice(selectedIndices[0], 0, mergedBlock);
 
-                    set({ blocks: newBlocks });
+                    // Clean up spans touching merged blocks
+                    const mergedIds = new Set(selectedBlocks.map(b => b.id));
+                    const { imageSpans } = get();
+                    const cleanSpans = imageSpans.filter(span =>
+                        !mergedIds.has(span.sourceBlockId) && !mergedIds.has(span.endBlockId)
+                    );
+
+                    set({ blocks: newBlocks, imageSpans: cleanSpans });
                 },
+
+                addImageSpan: (sourceBlockId, imageLayerId, endBlockId) =>
+                    set((state) => ({
+                        imageSpans: [
+                            ...state.imageSpans,
+                            { id: crypto.randomUUID(), sourceBlockId, imageLayerId, endBlockId },
+                        ],
+                    })),
+
+                updateImageSpan: (spanId, endBlockId) =>
+                    set((state) => ({
+                        imageSpans: state.imageSpans.map(span =>
+                            span.id === spanId ? { ...span, endBlockId } : span
+                        ),
+                    })),
+
+                removeImageSpan: (spanId) =>
+                    set((state) => ({
+                        imageSpans: state.imageSpans.filter(span => span.id !== spanId),
+                    })),
+
+                removeSpansForImage: (blockId, imageLayerId) =>
+                    set((state) => ({
+                        imageSpans: state.imageSpans.filter(span =>
+                            !(span.sourceBlockId === blockId && span.imageLayerId === imageLayerId)
+                        ),
+                    })),
 
                 loadScript: async () => {
                     set({ isLoading: true });
                     try {
                         const blocks = await fetchScript();
                         if (blocks.length > 0) {
-                            set({ blocks });
+                            set({ blocks, imageSpans: [] });
                         } else {
                             if (get().blocks.length === 0) {
                                 get().addBlock("こんにちは、VisionForgeSへようこそ！");
@@ -458,7 +527,7 @@ export const useEditorStore = create<EditorState>()(
                 }
             }),
             {
-                partialize: (state) => ({ blocks: state.blocks }),
+                partialize: (state) => ({ blocks: state.blocks, imageSpans: state.imageSpans }),
                 limit: 50
             }
         ),
@@ -508,6 +577,7 @@ export const useEditorStore = create<EditorState>()(
 
                         return updatedBlock;
                     }),
+                    imageSpans: state.imageSpans,
                     // Also save image reference maps (only for completed saves)
                     imageRefs: Array.from(imageRefMap.entries()).filter(([blockId]) => completedSaves.has(blockId)),
                     imagesRefs: Array.from(imagesRefMap.entries()).filter(([refKey]) => completedSaves.has(refKey)),

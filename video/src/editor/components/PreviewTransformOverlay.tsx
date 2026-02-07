@@ -90,7 +90,7 @@ export const PreviewTransformOverlay: React.FC<Props> = ({
                 const dirX = isRight ? 1 : -1;
                 const dirY = isBottom ? 1 : -1;
                 const distance = (deltaX * dirX + deltaY * dirY) / 2;
-                const scaleChange = distance / 100;
+                const scaleChange = distance / 250;
                 const newScale = Math.max(0.1, Math.min(5, initialValues.scale + scaleChange));
                 onUpdateImage(selectedImageId, { scale: newScale });
                 break;
@@ -134,12 +134,17 @@ export const PreviewTransformOverlay: React.FC<Props> = ({
         onSelectImage(imageId);
     }, [onSelectImage]);
 
-    // Handle click on overlay background to deselect
+    // Handle click on overlay background to select/deselect
     const handleOverlayClick = useCallback((e: React.MouseEvent) => {
         if (e.target === overlayRef.current) {
-            onSelectImage(undefined);
+            if (!selectedImageId && images.length > 0) {
+                // Nothing selected yet — select the first image
+                onSelectImage(images[0].id);
+            } else {
+                onSelectImage(undefined);
+            }
         }
-    }, [onSelectImage]);
+    }, [onSelectImage, selectedImageId, images]);
 
     // Don't render if no block or no images
     if (!block || images.length === 0 || containerWidth === 0 || containerHeight === 0) {
@@ -157,33 +162,6 @@ export const PreviewTransformOverlay: React.FC<Props> = ({
             ref={overlayRef}
             onClick={handleOverlayClick}
         >
-            {/* Render clickable area for each image */}
-            {images.map((image) => {
-                const isSelected = image.id === selectedImageId;
-                const transformedX = frameCenterX + (image.x * scaleFactor);
-                const transformedY = frameCenterY + (image.y * scaleFactor);
-
-                return (
-                    <div
-                        key={image.id}
-                        className={`${styles.imageFrame} ${isSelected ? styles.imageFrameSelected : ''}`}
-                        style={{
-                            width: frameWidth,
-                            height: frameHeight,
-                            left: transformedX,
-                            top: transformedY,
-                            transform: `translate(-50%, -50%) rotate(${image.rotation}deg) scale(${image.scale})`,
-                        }}
-                        onClick={(e) => handleImageClick(e, image.id)}
-                    >
-                        {/* Show label */}
-                        <div className={styles.imageLabel}>
-                            画像 {images.indexOf(image) + 1}
-                        </div>
-                    </div>
-                );
-            })}
-
             {/* Transform controls for selected image */}
             {selectedImage && (
                 <>

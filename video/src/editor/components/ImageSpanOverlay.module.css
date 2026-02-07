@@ -1,0 +1,76 @@
+/* Image Span Overlay - positioned absolutely within the block list */
+.spanColumn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 24px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Small dot indicator for blocks that have images */
+.imageIndicator {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00bcd4;
+    cursor: grab;
+    pointer-events: auto;
+    left: 7px;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.imageIndicator:hover {
+    transform: scale(1.4);
+    box-shadow: 0 0 8px rgba(0, 188, 212, 0.6);
+}
+
+/* Vertical bar connecting spanned blocks */
+.spanBar {
+    position: absolute;
+    width: 4px;
+    background: #00bcd4;
+    left: 10px;
+    border-radius: 2px;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+.spanBar:hover {
+    opacity: 1;
+}
+
+/* Drag handle at the bottom of a span bar */
+.dragHandle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #00bcd4;
+    border: 2px solid #1e1e1e;
+    cursor: ns-resize;
+    pointer-events: auto;
+    left: 5px;
+    transform: translateY(-50%);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dragHandle:hover {
+    transform: translateY(-50%) scale(1.2);
+    box-shadow: 0 0 8px rgba(0, 188, 212, 0.6);
+}
+
+/* Preview bar shown during drag */
+.previewBar {
+    position: absolute;
+    width: 4px;
+    background: #00bcd4;
+    left: 10px;
+    border-radius: 2px;
+    opacity: 0.4;
+    pointer-events: none;
+}

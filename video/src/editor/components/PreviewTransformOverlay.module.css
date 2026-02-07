@@ -173,6 +173,40 @@
     background: #555;
 }
 
+/* Layer Switcher */
+.layerSwitcher {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    z-index: 20;
+    pointer-events: auto;
+}
+
+.layerBtn {
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.layerBtn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.layerBtnActive {
+    background: rgba(0, 188, 212, 0.3);
+    border-color: #00bcd4;
+}
+
 /* Reset Button */
 .resetBtn {
     position: absolute;

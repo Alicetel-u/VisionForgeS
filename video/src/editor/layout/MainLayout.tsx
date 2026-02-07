@@ -8,13 +8,14 @@ import {
 import { useEditorStore } from '../store/editorStore';
 import { CaptionBlock } from '../components/CaptionBlock';
 import { PreviewTransformOverlay } from '../components/PreviewTransformOverlay';
+import { ImageSpanOverlay } from '../components/ImageSpanOverlay';
 import { EditorPreview } from '../../remotion/compositions/EditorPreview';
 import { ImageLayer, getBlockImages } from '../types';
 import styles from './MainLayout.module.css';
 
 export const MainLayout: React.FC = () => {
     const {
-        blocks, addBlock, saveOnly, generateAllAudio, isLoading,
+        blocks, imageSpans, addBlock, saveOnly, generateAllAudio, isLoading,
         selectAll, updateBlock, removeSelected, getSelectedCount,
         loadScript, canMergeSelected, mergeSelected, generateAudioForSelected
     } = useEditorStore();
@@ -97,8 +98,13 @@ export const MainLayout: React.FC = () => {
     const fps = 30;
     const durationInFrames = Math.ceil(Math.max(totalDurationInSeconds, 1) * fps);
 
+    const blockListRef = React.useRef<HTMLDivElement>(null);
+
     // Create stable inputProps for Player - spread to create new reference when blocks change
-    const playerInputProps = useMemo(() => ({ blocks: [...blocks] as typeof blocks }), [blocks]);
+    const playerInputProps = useMemo(() => ({
+        blocks: [...blocks] as typeof blocks,
+        imageSpans: [...imageSpans],
+    }), [blocks, imageSpans]);
 
     // Handle Keyboard Shortcuts
     React.useEffect(() => {
@@ -313,6 +319,10 @@ export const MainLayout: React.FC = () => {
                             {isPlaying ? <Pause size={18} /> : <Play size={18} />}
                         </button>
 
+                        <div className={styles.timeDisplay}>
+                            {formatTime(currentTime)} / {formatTime(totalDurationInSeconds)}
+                        </div>
+
                         <button
                             className={styles.controlBtn}
                             onClick={() => {
@@ -332,6 +342,27 @@ export const MainLayout: React.FC = () => {
                             <RotateCcw size={16} />
                             <span style={{ marginLeft: '6px', fontSize: '0.8rem' }}>リセット</span>
                         </button>
+
+                        {/* Layer switcher (when multiple images exist) */}
+                        {activeBlock && getBlockImages(activeBlock).length > 1 && (
+                            <div style={{ display: 'flex', gap: '4px', marginLeft: '12px' }}>
+                                {getBlockImages(activeBlock).map((image, index) => (
+                                    <button
+                                        key={image.id}
+                                        className={styles.controlBtn}
+                                        onClick={() => handleSelectImage(image.id)}
+                                        style={{
+                                            background: image.id === activeBlock.selectedImageId
+                                                ? 'rgba(0, 188, 212, 0.3)' : undefined,
+                                            borderColor: image.id === activeBlock.selectedImageId
+                                                ? '#00bcd4' : undefined,
+                                        }}
+                                    >
+                                        <span style={{ fontSize: '0.8rem' }}>画像{index + 1}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -436,24 +467,32 @@ export const MainLayout: React.FC = () => {
                     </span>
                 </div>
 
-                <div className={styles.blockList}>
-                    {blocks.map((block, index) => (
-                        <CaptionBlock
-                            key={block.id}
-                            block={block}
-                            index={index}
-                            onFocus={() => {
-                                selectBlockExclusive(block.id);
-                                handleBlockFocus(index);
-                            }}
-                            onPlay={() => playBlock(index)}
+                <div className={styles.blockList} ref={blockListRef}>
+                    <div style={{ position: 'relative' }}>
+                        <ImageSpanOverlay
+                            blocks={blocks}
+                            imageSpans={imageSpans}
+                            blockListRef={blockListRef}
                         />
-                    ))}
+                        {blocks.map((block, index) => (
+                            <div key={block.id} data-block-id={block.id} style={{ paddingLeft: 28 }}>
+                                <CaptionBlock
+                                    block={block}
+                                    index={index}
+                                    onFocus={() => {
+                                        selectBlockExclusive(block.id);
+                                        handleBlockFocus(index);
+                                    }}
+                                    onPlay={() => playBlock(index)}
+                                />
+                            </div>
+                        ))}
 
-                    <button className={styles.addBtn} onClick={() => addBlock()}>
-                        <Plus size={18} />
-                        <span>クリップを追加</span>
-                    </button>
+                        <button className={styles.addBtn} onClick={() => addBlock()} style={{ marginLeft: 28 }}>
+                            <Plus size={18} />
+                            <span>クリップを追加</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

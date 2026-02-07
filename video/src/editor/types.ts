@@ -50,6 +50,46 @@ export const getBlockImages = (block: EditorBlock): ImageLayer[] => {
     return [];
 };
 
+// Image span: an image that visually extends across multiple blocks
+export interface ImageSpan {
+    id: string;
+    sourceBlockId: string;   // Block that owns the original image
+    imageLayerId: string;    // Which ImageLayer in that block
+    endBlockId: string;      // Last block the span covers (inclusive)
+}
+
+// Get all images visible on a given block, including spanned images from other blocks
+export const getEffectiveImages = (
+    blocks: EditorBlock[],
+    imageSpans: ImageSpan[],
+    blockId: string
+): ImageLayer[] => {
+    const block = blocks.find(b => b.id === blockId);
+    if (!block) return [];
+
+    const ownImages = getBlockImages(block);
+    const blockIndex = blocks.findIndex(b => b.id === blockId);
+    const spannedImages: ImageLayer[] = [];
+
+    for (const span of imageSpans) {
+        const sourceIndex = blocks.findIndex(b => b.id === span.sourceBlockId);
+        const endIndex = blocks.findIndex(b => b.id === span.endBlockId);
+        if (sourceIndex === -1 || endIndex === -1) continue;
+
+        // Block is within span range (source block uses own images, so exclude it)
+        if (blockIndex > sourceIndex && blockIndex <= endIndex) {
+            const sourceBlock = blocks[sourceIndex];
+            const sourceImages = getBlockImages(sourceBlock);
+            const spannedLayer = sourceImages.find(img => img.id === span.imageLayerId);
+            if (spannedLayer) {
+                spannedImages.push(spannedLayer);
+            }
+        }
+    }
+
+    return [...spannedImages, ...ownImages];
+};
+
 export interface VideoConfig {
     fps: number;
     width: number;

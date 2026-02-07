@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { AbsoluteFill, Sequence, useVideoConfig, Img, staticFile, Audio, useCurrentFrame, interpolate } from 'remotion';
-import { EditorBlock, ImageLayer, getBlockImages } from '../../editor/types';
+import { EditorBlock, ImageLayer, ImageSpan, getBlockImages, getEffectiveImages } from '../../editor/types';
 
 interface Props {
     blocks: EditorBlock[];
+    imageSpans?: ImageSpan[];
 }
 
 // Helper to get valid image source
@@ -39,7 +40,7 @@ const ImageLayerComponent: React.FC<{ layer: ImageLayer; kenBurnsScale: number }
     );
 };
 
-const PreviewBlock: React.FC<{ block: EditorBlock }> = ({ block }) => {
+const PreviewBlock: React.FC<{ block: EditorBlock; allBlocks: EditorBlock[]; imageSpans: ImageSpan[] }> = ({ block, allBlocks, imageSpans }) => {
     const frame = useCurrentFrame();
     const { durationInFrames } = useVideoConfig();
 
@@ -51,8 +52,10 @@ const PreviewBlock: React.FC<{ block: EditorBlock }> = ({ block }) => {
         { extrapolateRight: 'clamp' }
     );
 
-    // Get all images (handles both legacy and new format)
-    const images = getBlockImages(block);
+    // Get all images including spanned ones
+    const images = imageSpans.length > 0
+        ? getEffectiveImages(allBlocks, imageSpans, block.id)
+        : getBlockImages(block);
     const hasImages = images.length > 0;
 
     return (
@@ -69,27 +72,6 @@ const PreviewBlock: React.FC<{ block: EditorBlock }> = ({ block }) => {
                     />
                 ))}
 
-                {/* Character Image Placeholder (when no images) */}
-                {!hasImages && (
-                    <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        height: '70%',
-                        width: '40%',
-                        backgroundColor: '#444',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'end',
-                        color: 'white',
-                        fontSize: 24,
-                        borderTopLeftRadius: 20,
-                        borderTopRightRadius: 20,
-                    }}>
-                        {block.speaker}
-                    </div>
-                )}
 
                 {/* Text / Caption */}
                 <div style={{
@@ -125,7 +107,7 @@ const PreviewBlock: React.FC<{ block: EditorBlock }> = ({ block }) => {
     );
 };
 
-export const EditorPreview: React.FC<Props> = ({ blocks }) => {
+export const EditorPreview: React.FC<Props> = ({ blocks, imageSpans = [] }) => {
     const { fps } = useVideoConfig();
 
     // Pre-calculate frame positions for each block
@@ -148,7 +130,7 @@ export const EditorPreview: React.FC<Props> = ({ blocks }) => {
                 const { from, duration } = blockFrames[index] || { from: 0, duration: 60 };
                 return (
                     <Sequence key={block.id} from={from} durationInFrames={duration}>
-                        <PreviewBlock block={block} />
+                        <PreviewBlock block={block} allBlocks={blocks} imageSpans={imageSpans} />
                     </Sequence>
                 );
             })}
